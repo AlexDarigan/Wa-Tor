@@ -32,8 +32,8 @@
 
 int main()
 {
-  int xdim = 100;
-  int ydim= 100;
+  int xdim = 10;
+  int ydim= 10;
   int WindowXSize=800;
   int WindowYSize=600;
   int cellXSize=WindowXSize/xdim;
