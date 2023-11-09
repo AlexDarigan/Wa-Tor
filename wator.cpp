@@ -30,6 +30,9 @@
 
 #include <SFML/Graphics.hpp>
 
+struct 
+
+
 int main()
 {
   int xdim = 10;
@@ -76,4 +79,4 @@ int main()
 }
 
 // 
-// test.cpp ends here
+// wator.cpp ends here
