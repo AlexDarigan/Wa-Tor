@@ -48,6 +48,7 @@ int main()
   sf::RectangleShape recArray[xdim][ydim];
   sf::RectangleShape recArray2[xdim][ydim];
   for(int i=0;i<xdim;++i){
+    recArray[xdim][ydim].setFillColor(Ocean);
     for(int k=0;k<ydim;++k){//give each one a size, position and color
       recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
@@ -75,17 +76,21 @@ int main()
       // MoveFishLeft + New Fish
       for(int y = 0; y < ydim; ++y) {
         for(int x = 0; x < xdim; ++x) {
-          bool isFish = recArray[x][y].getFillColor() == Fish;
-          bool isBlocked = recArray[(x + 1) % xdim][y].getFillColor() == Fish;
+          // TODO: Check memory management
+          // printf("%d", x);
+          // printf("%d", y);
+          int destination = (x + 1) % xdim;
+          sf::RectangleShape prevCell = recArray[x][y];
+          sf::RectangleShape nextCell = recArray[(x + 1) % xdim][y];
+
+          bool isFish = prevCell.getFillColor() == Fish;
+          bool isBlocked = nextCell.getFillColor() == Fish;
           if(isFish && !isBlocked) {
-            printf("%s","Move Fish\n");
+            recArray2[destination][y].setFillColor(Fish);
           } else {
             printf("%s", "No Move Fish\n");
           }
-          // if(recArray[(x + 1) % xdim][y].color == sf::Color)
-          // recArray[x][y].setFillColor(sf::Color::Yellow);
         }
-        break;
       }
       // MoveFishRight + New Fish
       // MoveFishUp + New Fish
@@ -94,6 +99,14 @@ int main()
       // MoveSharksRight + EatFish
       // MoveSharksUp + EatFish
       // MoveSharksDown + EatFish
+
+    // Pass buffer and clear
+    for(int y = 0; y < ydim; ++y) {
+      for(int x = 0; x < xdim; ++x) {
+        recArray[x][y].setFillColor(recArray2[x][y].getFillColor());
+        recArray2[x][y].setFillColor(Ocean);
+      }
+    }
 	
 	
 	//loop these three lines to draw frames
