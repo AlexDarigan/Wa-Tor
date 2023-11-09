@@ -2,8 +2,8 @@
 // 
 // Filename: wator.cpp
 // Description: 
-// Author: David
-// Maintainer: 
+// Author: David Darigan
+// Maintainer: David Darigan
 // Created: Fri Nov  9
 // Last-Updated: Fri Nov  9
 //           By: David
