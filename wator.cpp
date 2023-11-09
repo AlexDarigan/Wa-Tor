@@ -30,7 +30,9 @@
 
 #include <SFML/Graphics.hpp>
 
-struct 
+sf::Color Ocean = sf::Color::Blue;
+sf::Color Fish = sf::Color::Green;
+
 
 
 int main()
@@ -49,8 +51,8 @@ int main()
       recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
       int id=i*1-+k;
-      if (id%2==0) recArray[i][k].setFillColor(sf::Color::Green);
-      else recArray[i][k].setFillColor(sf::Color::Blue);
+      if (id%2==0) recArray[i][k].setFillColor(Fish);
+      else recArray[i][k].setFillColor(Ocean);
     }
   }
     sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
