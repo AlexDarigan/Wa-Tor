@@ -46,6 +46,7 @@ int main()
   //each shape will represent either a fish, shark or empty space
   //e.g. blue for empty, red for shark and green for fish
   sf::RectangleShape recArray[xdim][ydim];
+  sf::RectangleShape recArray2[xdim][ydim];
   for(int i=0;i<xdim;++i){
     for(int k=0;k<ydim;++k){//give each one a size, position and color
       recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
@@ -68,16 +69,31 @@ int main()
                 window.close();
         }
 	
-	// current = future
-	// future = new Array()
-	// MoveFishLeft + New Fish
-	// MoveFishRight + New Fish
-	// MoveFishUp + New Fish
-	// MoveFishDown + New Fish
-	// MoveSharksLeft + EatFish
-	// MoveSharksRight + EatFish
-	// MoveSharksUp + EatFish
-	// MoveSharksDown + EatFish
+      // current = future
+      // future = new Array()
+
+      // MoveFishLeft + New Fish
+      for(int y = 0; y < ydim; ++y) {
+        for(int x = 0; x < xdim; ++x) {
+          bool isFish = recArray[x][y].getFillColor() == Fish;
+          bool isBlocked = recArray[(x + 1) % xdim][y].getFillColor() == Fish;
+          if(isFish && !isBlocked) {
+            printf("%s","Move Fish\n");
+          } else {
+            printf("%s", "No Move Fish\n");
+          }
+          // if(recArray[(x + 1) % xdim][y].color == sf::Color)
+          // recArray[x][y].setFillColor(sf::Color::Yellow);
+        }
+        break;
+      }
+      // MoveFishRight + New Fish
+      // MoveFishUp + New Fish
+      // MoveFishDown + New Fish
+      // MoveSharksLeft + EatFish
+      // MoveSharksRight + EatFish
+      // MoveSharksUp + EatFish
+      // MoveSharksDown + EatFish
 	
 	
 	//loop these three lines to draw frames
