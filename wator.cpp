@@ -43,7 +43,7 @@ int main()
   sf::RectangleShape recArray[xdim][ydim];
   for(int i=0;i<xdim;++i){
     for(int k=0;k<ydim;++k){//give each one a size, position and color
-      recArray[i][k].setSize(sf::Vector2f(80.f,60.f));
+      recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
       int id=i*1-+k;
       if (id%2==0) recArray[i][k].setFillColor(sf::Color::Green);
