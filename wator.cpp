@@ -65,6 +65,19 @@ int main()
             if (event.type == sf::Event::Closed)
                 window.close();
         }
+	
+	// current = future
+	// future = new Array()
+	// MoveFishLeft + New Fish
+	// MoveFishRight + New Fish
+	// MoveFishUp + New Fish
+	// MoveFishDown + New Fish
+	// MoveSharksLeft + EatFish
+	// MoveSharksRight + EatFish
+	// MoveSharksUp + EatFish
+	// MoveSharksDown + EatFish
+	
+	
 	//loop these three lines to draw frames
         window.clear(sf::Color::Black);
 	for(int i=0;i<xdim;++i){
