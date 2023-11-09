@@ -33,20 +33,25 @@
 sf::Color Ocean = sf::Color::Blue;
 sf::Color Fish = sf::Color::Green;
 
+// Constants required by following arrays
+const int xdim = 100;
+const int ydim= 100;
 
+// Allocating arrays on the heap by moving them to the global scope
+sf::RectangleShape recArray[xdim][ydim];
+sf::RectangleShape recArray2[xdim][ydim];
 
 int main()
 {
-  int xdim = 10;
-  int ydim= 10;
   int WindowXSize=800;
   int WindowYSize=600;
   int cellXSize=WindowXSize/xdim;
   int cellYSize=WindowYSize/ydim;
   //each shape will represent either a fish, shark or empty space
   //e.g. blue for empty, red for shark and green for fish
-  sf::RectangleShape recArray[xdim][ydim];
-  sf::RectangleShape recArray2[xdim][ydim];
+
+  // Allocating on the heap rather than the stack (because large x/y can cause stack)
+  
   for(int i=0;i<xdim;++i){
     recArray[xdim][ydim].setFillColor(Ocean);
     for(int k=0;k<ydim;++k){//give each one a size, position and color
@@ -76,9 +81,7 @@ int main()
       // MoveFishLeft + New Fish
       for(int y = 0; y < ydim; ++y) {
         for(int x = 0; x < xdim; ++x) {
-          // TODO: Check memory management
-          // printf("%d", x);
-          // printf("%d", y);
+          //printf("%d,%d", x, y);
           int destination = (x + 1) % xdim;
           sf::RectangleShape prevCell = recArray[x][y];
           sf::RectangleShape nextCell = recArray[(x + 1) % xdim][y];
