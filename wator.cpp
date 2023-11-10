@@ -134,34 +134,41 @@ int main()
 
       // TODO: Fix Direction Names
       // // MoveFishRight + New Fish
-      // for(int y = 0; y < ydim; ++y) {
-      //   for(int x = xdim - 1; x > 0; --x) {
-      //     int destination = (x - 1) % xdim;
-      //     bool isFish = recArray[x][y].getFillColor() == Fish;
-      //     // We need to add additional checks now that rec2 has been populated
-      //     bool isNotBlocked = (recArray[destination][y].getFillColor() == Ocean) && (recArray2[destination][y].getFillColor() == Ocean);
-          
-      //     // Fish are now able to be in two places at once
-      //     bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-      //     if(isFish && willMoveNow && isNotBlocked) {
-      //       recArray2[destination][y].setFillColor(Fish);
-      //       recArray2[x][y].setFillColor(Ocean);
-      //     } else {
-      //       // If we're not moving, we still need to state that in rect2
-      //       if(isFish) {
-      //         recArray2[x][y].setFillColor(Fish); 
-      //       }
-      //       else {
-      //         recArray[x][y].setFillColor(Ocean);
-      //       }
-      //       if(isNotBlocked) {
-      //         // Turn water into wine but not fish into the Ocean, that's for the sharks
-      //         recArray2[destination][y].setFillColor(Ocean);
-      //       }
-      //       printf("IsFish: %d, IsNotBlocked: %d, willMoveNow: %d\n", isFish, isNotBlocked, willMoveNow);
-      //     }
-      //   }
-      // }
+      for(int y = 0; y < ydim; ++y) {
+        for(int x = xdim - 1; x > 0; --x) {
+          int destination = (x - 1) % xdim;
+          // We need to add additional checks now that rec2 has been populated
+          //bool isNotBlocked = (recArray[destination][y].getFillColor() == Ocean) && (recArray2[destination][y].getFillColor() == Ocean);
+          bool isFish = cells[x][y].isFish;
+          bool isNotBlocked = cells[destination][y].isOcean;
+          // Fish are now able to be in two places at once
+          bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
+          bool hasMoved = cells[x][y].hasMoved;
+          if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
+            cells[destination][y].isFish = true;
+            cells[destination][y].isOcean = false;
+            cells[destination][y].hasMoved = true;
+            cells[x][y].isFish = false;
+            cells[x][y].isOcean = true;
+          } else {
+            // If we're not moving, we still need to state that in rect2
+            if(isFish) {
+              cells[x][y].isFish = true;
+              cells[x][y].isOcean = false;
+            }
+            else {
+              cells[x][y].isFish = false;
+              cells[x][y].isOcean = true;
+            }
+            if(isNotBlocked) {
+              // Turn water into wine but not fish into the Ocean, that's for the sharks
+              cells[destination][y].isFish = false;
+              cells[destination][y].isOcean = true;
+            }
+            printf("IsFish: %d, IsNotBlocked: %d, willMoveNow: %d\n", isFish, isNotBlocked, willMoveNow);
+          }
+        }
+      }
       // MoveFishUp + New Fish
       // MoveFishDown + New Fish
       // MoveSharksLeft + EatFish
@@ -172,6 +179,7 @@ int main()
     // Pass buffer and clear
     for(int y = 0; y < ydim; ++y) {
       for(int x = 0; x < xdim; ++x) {
+        cells[x][y].hasMoved = false;
         if(cells[x][y].isFish) {
           recArray[x][y].setFillColor(sf::Color::Green);
         } else {
