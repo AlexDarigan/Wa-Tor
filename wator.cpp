@@ -151,6 +151,20 @@ int main()
         }
       }
 
+      // Handle all the fish who have not yet moved
+      for(int y = 0; y < ydim; ++y) {
+        for(int x = 0; x < xdim; ++x) {
+          if(cells[x][y].celltype != CellType::Fish) { continue; }
+          for(int direction = 1; direction < 4; ++direction) {
+            int targetCardinal = (srand() % direction) % 4;
+            // Get target cardinal
+            // Check if free
+            // Otherwise remove cardinal, check next
+            // if none free, stay
+          }
+        }
+      }
+
       // MoveSharksLeft + EatFish
       // -- We can't just move everything in a direction at once in this case
       // -- We need to get decisions per direction, then act on those directions
