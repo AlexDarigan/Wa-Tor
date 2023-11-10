@@ -32,12 +32,11 @@
 #include <cstdlib> 
 
 // Defining structs because we need more information (like "moved this round")
+
+enum CellType { Ocean, Fish, PastFish, FutureFish };
+
 struct Cell {
-  bool isFish = false;
-  bool isOcean = false;
-  bool hasMoved = false;
-  bool wasFish = false;
-  bool willBeFish = false;
+  CellType celltype = Ocean;
 };
 
 // Constants required by following arrays
@@ -67,11 +66,11 @@ int main()
       if (id%2==0) { 
       //if(i == 0 && k == 0) {  
         recArray[i][k].setFillColor(sf::Color::Green);
-        cells[i][k].isFish = true;
+        cells[i][k].celltype = CellType::Fish;
       }
       else {
         recArray[i][k].setFillColor(sf::Color::Blue);
-        cells[i][k].isOcean = true;        
+        cells[i][k].celltype = CellType::Ocean;
       }
     }
   }
@@ -96,19 +95,21 @@ int main()
       for(int y = 0; y < ydim; ++y) {
         for(int x = 0; x < xdim; ++x) {
           int destination = (x + 1) % xdim;
-          bool isFish = cells[x][y].isFish;
-          bool isNotBlocked = cells[destination][y].isOcean; // Not always Ocean check
+          bool isFish = cells[x][y].celltype == CellType::Fish;
+          bool isNotBlocked = cells[destination][y].celltype == CellType::Ocean; // Not always Ocean check
           bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-          bool hasMoved = cells[x][y].hasMoved;
+          //bool hasMoved = cells[x][y].hasMoved;
           if(isFish) { fishes++; }
-          if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
+          if(isFish && willMoveNow && isNotBlocked) {
             //cells[destination][y].isFish = true;
-            cells[destination][y].willBeFish = true;
-            cells[destination][y].isOcean = false;
-            cells[destination][y].hasMoved = true;
-            cells[x][y].isFish = false;
-            //cells[x][y].isOcean = true;
-            cells[x][y].wasFish = true;
+            cells[destination][y].celltype = CellType::FutureFish;
+            cells[x][y].celltype = CellType::PastFish;
+            // cells[destination][y].willBeFish = true;
+            // cells[destination][y].isOcean = false;
+            // cells[destination][y].hasMoved = true;
+            // cells[x][y].isFish = false;
+            // //cells[x][y].isOcean = true;
+            // cells[x][y].wasFish = true;
           }
         }
       }
@@ -183,19 +184,41 @@ int main()
     printf("Fishes: %d\n", fishes);
     for(int y = 0; y < ydim; ++y) {
       for(int x = 0; x < xdim; ++x) {
-        cells[x][y].hasMoved = false;
-        if(cells[x][y].wasFish) {
-          cells[x][y].wasFish = false;
-          cells[x][y].isOcean = true;
-        } else if(cells[x][y].willBeFish) {
-          cells[x][y].willBeFish = false;
-          cells[x][y].isFish = true;
+        switch(cells[x][y].celltype) {
+          case CellType::Ocean: {
+            recArray[x][y].setFillColor(sf::Color::Blue);
+            break;
+          }
+          case CellType::Fish: {
+            recArray[x][y].setFillColor(sf::Color::Green);
+            // No Cells should be fish unless surrounded
+            break;
+          }
+          case CellType::PastFish: {
+            recArray[x][y].setFillColor(sf::Color::Blue);
+            cells[x][y].celltype = CellType::Ocean;
+            break;
+          }
+          case CellType::FutureFish: {
+            recArray[x][y].setFillColor(sf::Color::Green);
+            cells[x][y].celltype = CellType::Fish;
+            break;
+          }
         }
-        if(cells[x][y].isFish) {
-          recArray[x][y].setFillColor(sf::Color::Green);
-        } else {
-          recArray[x][y].setFillColor(sf::Color::Blue);
-        }
+
+        // cells[x][y].hasMoved = false;
+        // if(cells[x][y].wasFish) {
+        //   cells[x][y].wasFish = false;
+        //   cells[x][y].isOcean = true;
+        // } else if(cells[x][y].willBeFish) {
+        //   cells[x][y].willBeFish = false;
+        //   cells[x][y].isFish = true;
+        // }
+        // if(cells[x][y].isFish) {
+        //   recArray[x][y].setFillColor(sf::Color::Green);
+        // } else {
+        //   recArray[x][y].setFillColor(sf::Color::Blue);
+        // }
       }
     }
     fishes = 0;    
