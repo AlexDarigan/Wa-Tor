@@ -62,9 +62,9 @@ int main()
       recArray2[i][k].setFillColor(Ocean);
       recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
-      //int id=i*1-+k;
-      //if (id%2==0) recArray[i][k].setFillColor(Fish);
-      if(i == 0 && k == 0) { recArray[0][0].setFillColor(Fish); }
+      int id=i*1-+k;
+      if (id%2==0) recArray[i][k].setFillColor(Fish);
+      //if(i == 0 && k == 0) { recArray[0][0].setFillColor(Fish); }
       else recArray[i][k].setFillColor(Ocean);
     }
   }
