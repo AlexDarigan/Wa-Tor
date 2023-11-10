@@ -33,7 +33,7 @@
 
 // Defining structs because we need more information (like "moved this round")
 
-enum CellType { Ocean, Fish, PastFish, FutureFish };
+enum CellType { Ocean, Fish, PastFish, FutureFish, Shark, PastShark, FutureShark };
 
 struct Cell {
   CellType celltype = Ocean;
@@ -63,7 +63,11 @@ int main()
       recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
       int id=i*1-+k;
-      if (id%2==0) { 
+      if(id%10==0) {
+        recArray[i][k].setFillColor(sf::Color::Red);
+        cells[i][k].celltype = CellType::Shark;
+      }
+      else if (id%2==0) { 
       //if(i == 0 && k == 0) {  
         recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Fish;
