@@ -100,9 +100,11 @@ int main()
           bool isFish = cells[x][y].isFish;
           bool isNotBlocked = cells[destination][y].isOcean;
           bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-          if(isFish && willMoveNow && isNotBlocked) {
+          bool hasMoved = cells[x][y].hasMoved;
+          if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
             cells[destination][y].isFish = true;
             cells[destination][y].isOcean = false;
+            cells[destination][y].hasMoved = true;
             cells[x][y].isFish = false;
             cells[x][y].isOcean = true;
           //  recArray2[destination][y].setFillColor(Fish);
