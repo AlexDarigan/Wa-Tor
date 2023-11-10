@@ -73,6 +73,8 @@ int main()
       }
     }
   }
+
+    int fishes = 0;
     sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
    
 
@@ -96,6 +98,7 @@ int main()
           bool isNotBlocked = cells[destination][y].isOcean;
           bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
           bool hasMoved = cells[x][y].hasMoved;
+          if(isFish) { fishes++; }
           if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
             cells[destination][y].isFish = true;
             cells[destination][y].isOcean = false;
@@ -115,6 +118,7 @@ int main()
           bool isNotBlocked = cells[destination][y].isOcean;
           bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
           bool hasMoved = cells[x][y].hasMoved;
+          if(isFish) { fishes++; }
           if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
             cells[destination][y].isFish = true;
             cells[destination][y].isOcean = false;
@@ -137,9 +141,8 @@ int main()
           //bool isNotBlocked = true;
           //bool willMoveNow = true;
           bool hasMoved = cells[x][y].hasMoved;
+          if(isFish) { fishes++; }
           if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
-            printf("got fish\n");
-            printf("%d, %d\n", y, destination);
             cells[x][destination].isFish = true;
             cells[x][destination].isOcean = false;
             cells[x][destination].hasMoved = true;
@@ -157,6 +160,7 @@ int main()
           bool isNotBlocked = cells[x][destination].isOcean;
           bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
           bool hasMoved = cells[x][y].hasMoved;
+          if(isFish) { fishes++; }
           if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
             cells[x][destination].isFish = true;
             cells[x][destination].isOcean = false;
@@ -172,20 +176,18 @@ int main()
       // MoveSharksDown + EatFish
 
     // Pass buffer and clear
-    int aFish = 0;
+    printf("Fishes: %d\n", fishes);
     for(int y = 0; y < ydim; ++y) {
       for(int x = 0; x < xdim; ++x) {
         cells[x][y].hasMoved = false;
         if(cells[x][y].isFish) {
-          aFish++;
           recArray[x][y].setFillColor(sf::Color::Green);
         } else {
           recArray[x][y].setFillColor(sf::Color::Blue);
         }
       }
     }
-    printf("Fish Count: %d", aFish);
-    
+    fishes = 0;    
 
     
 
