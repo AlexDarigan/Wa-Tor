@@ -86,7 +86,7 @@ int main()
                 window.close();
         }
 
-      // MoveFishLeft + New Fish
+      // MoveFishRight + New Fish
       for(int y = 0; y < ydim; ++y) {
         for(int x = 0; x < xdim; ++x) {
           int destination = (x + 1) % xdim;
@@ -105,7 +105,7 @@ int main()
       }
 
       // TODO: Fix Direction Names
-      // // MoveFishRight + New Fish
+      // // MoveFishLeft + New Fish
       for(int y = 0; y < ydim; ++y) {
         for(int x = xdim - 1; x > 0; --x) {
           int destination = (x - 1) % xdim;
@@ -122,7 +122,25 @@ int main()
           }
         }
       }
-      // MoveFishUp + New Fish
+
+      // Splits the screen for some reason (why meet in the middle?)
+     // MoveFishUp + New Fish
+      // for(int y = ydim - 1; y > 0; --y) {
+      //   for(int x = 0; x < xdim; ++x) {
+      //     int destination = (y - 1) % ydim;
+      //     bool isFish = cells[x][y].isFish;
+      //     bool isNotBlocked = cells[x][destination].isOcean;
+      //     bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
+      //     bool hasMoved = cells[x][y].hasMoved;
+      //     if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
+      //       cells[x][destination].isFish = true;
+      //       cells[x][destination].isOcean = false;
+      //       cells[x][destination].hasMoved = true;
+      //       cells[x][y].isFish = false;
+      //       cells[x][y].isOcean = true;
+      //     }
+      //   }
+      // }
       // MoveFishDown + New Fish
       // MoveSharksLeft + EatFish
       // MoveSharksRight + EatFish
