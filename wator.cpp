@@ -39,8 +39,8 @@ struct Cell {
 };
 
 // Constants required by following arrays
-const int xdim = 100;
-const int ydim= 100;
+const int xdim = 10;
+const int ydim= 10;
 
 // Allocating arrays on the heap by moving them to the global scope
 sf::RectangleShape recArray[xdim][ydim];
@@ -49,7 +49,7 @@ Cell cells[xdim][ydim];
 
 int main()
 {
-  srand(785089);
+  srand(0);
   int WindowXSize=800;
   int WindowYSize=600;
   int cellXSize=WindowXSize/xdim;
@@ -63,6 +63,7 @@ int main()
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
       int id=i*1-+k;
       if (id%2==0) { 
+      //if(i == 0 && k == 0) {  
         recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].isFish = true;
       }
@@ -127,9 +128,31 @@ int main()
       // Splits the screen for some reason (why meet in the middle?)
       
       // MoveFishUp + New Fish
-      for(int y = ydim - 1; y > 0; --y) {
+      for(int y = ydim - 1; y > -1; --y) {
         for(int x = 0; x < xdim; ++x) {
           int destination = (y - 1 + ydim) % ydim;
+          bool isFish = cells[x][y].isFish;
+          bool isNotBlocked = cells[x][destination].isOcean;
+          bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
+          //bool isNotBlocked = true;
+          //bool willMoveNow = true;
+          bool hasMoved = cells[x][y].hasMoved;
+          if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
+            printf("got fish\n");
+            printf("%d, %d\n", y, destination);
+            cells[x][destination].isFish = true;
+            cells[x][destination].isOcean = false;
+            cells[x][destination].hasMoved = true;
+            cells[x][y].isFish = false;
+            cells[x][y].isOcean = true;
+          }
+        }
+      }
+      
+      //MoveFishDown + New Fish
+      for(int y = 0; y < ydim; ++y) {
+        for(int x = 0; x < xdim; ++x) {
+          int destination = (y + 1) % ydim;
           bool isFish = cells[x][y].isFish;
           bool isNotBlocked = cells[x][destination].isOcean;
           bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
@@ -143,40 +166,26 @@ int main()
           }
         }
       }
-      
-      // MoveFishDown + New Fish
-      // for(int y = 0; y < ydim; ++y) {
-      //   for(int x = 0; x < xdim; ++x) {
-      //     int destination = (y + 1) % ydim;
-      //     bool isFish = cells[x][y].isFish;
-      //     bool isNotBlocked = cells[x][destination].isOcean;
-      //     bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-      //     bool hasMoved = cells[x][y].hasMoved;
-      //     if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
-      //       cells[x][destination].isFish = true;
-      //       cells[x][destination].isOcean = false;
-      //       cells[x][destination].hasMoved = true;
-      //       cells[x][y].isFish = false;
-      //       cells[x][y].isOcean = true;
-      //     }
-      //   }
-      // }
-      // MoveSharksLeft + EatFish
+      // // MoveSharksLeft + EatFish
       // MoveSharksRight + EatFish
       // MoveSharksUp + EatFish
       // MoveSharksDown + EatFish
 
     // Pass buffer and clear
+    int aFish = 0;
     for(int y = 0; y < ydim; ++y) {
       for(int x = 0; x < xdim; ++x) {
         cells[x][y].hasMoved = false;
         if(cells[x][y].isFish) {
+          aFish++;
           recArray[x][y].setFillColor(sf::Color::Green);
         } else {
           recArray[x][y].setFillColor(sf::Color::Blue);
         }
       }
     }
+    printf("Fish Count: %d", aFish);
+    
 
     
 
@@ -188,12 +197,12 @@ int main()
   window.clear(sf::Color::Black);
 	for(int i=0;i<xdim;++i){
 	  for(int k=0;k<ydim;++k){
-	    window.draw(recArray[i][k]);
+	      window.draw(recArray[i][k]);
+	    }
 	  }
-	}
-        window.display();
+      sf::sleep(sf::seconds(1));
+      window.display();
     }
-
     
 
 
