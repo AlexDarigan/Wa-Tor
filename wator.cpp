@@ -31,9 +31,14 @@
 #include <SFML/Graphics.hpp>
 #include <cstdlib> 
 
+// Defining structs because we need more information (like "moved this round")
+struct Cell {
+  bool isFish = false;
+  bool isOcean = false;
+  bool hasMoved = false;
+};
 
-sf::Color Ocean = sf::Color::Blue;
-sf::Color Fish = sf::Color::Green;
+// make
 
 // Constants required by following arrays
 const int xdim = 100;
@@ -42,7 +47,7 @@ const int ydim= 100;
 // Allocating arrays on the heap by moving them to the global scope
 sf::RectangleShape recArray[xdim][ydim];
 sf::RectangleShape recArray2[xdim][ydim];
-
+Cell cells[xdim][ydim];
 
 int main()
 {
@@ -57,15 +62,20 @@ int main()
   // Allocating on the heap rather than the stack (because large x/y can cause stack)
   
   for(int i=0;i<xdim;++i){
-    recArray[xdim][ydim].setFillColor(Ocean);
+    recArray[xdim][ydim].setFillColor(sf::Color::Blue);
     for(int k=0;k<ydim;++k){//give each one a size, position and color
-      recArray2[i][k].setFillColor(Ocean);
+      recArray2[i][k].setFillColor(sf::Color::Blue);
       recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
       int id=i*1-+k;
-      if (id%2==0) recArray[i][k].setFillColor(Fish);
-      //if(i == 0 && k == 0) { recArray[0][0].setFillColor(Fish); }
-      else recArray[i][k].setFillColor(Ocean);
+      if (id%2==0) { 
+        recArray[i][k].setFillColor(sf::Color::Green);
+        cells[i][k].isFish = true;
+      }
+      else {
+        recArray[i][k].setFillColor(sf::Color::Blue);
+        cells[i][k].isOcean = true;        
+      }
     }
   }
     sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
@@ -85,30 +95,71 @@ int main()
       for(int y = 0; y < ydim; ++y) {
         for(int x = 0; x < xdim; ++x) {
           int destination = (x + 1) % xdim;
-          bool isFish = recArray[x][y].getFillColor() == Fish;
-          bool isNotBlocked = recArray[destination][y].getFillColor() == Ocean;
+          //bool isFish = recArray[x][y].getFillColor() == Fish;
+          //bool isNotBlocked = recArray[destination][y].getFillColor() == Ocean;
+          bool isFish = cells[x][y].isFish;
+          bool isNotBlocked = cells[destination][y].isOcean;
           bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
           if(isFish && willMoveNow && isNotBlocked) {
-            recArray2[destination][y].setFillColor(Fish);
-            recArray2[x][y].setFillColor(Ocean);
+            cells[destination][y].isFish = true;
+            cells[destination][y].isOcean = false;
+            cells[x][y].isFish = false;
+            cells[x][y].isOcean = true;
+          //  recArray2[destination][y].setFillColor(Fish);
+          //  recArray2[x][y].setFillColor(Ocean);
           } else {
             // If we're not moving, we still need to state that in rect2
             if(isFish) {
-              recArray2[x][y].setFillColor(Fish); 
+              //recArray2[x][y].setFillColor(Fish); 
+              cells[x][y].isFish = true;
+              cells[x][y].isOcean = false;
             }
             else {
-              recArray[x][y].setFillColor(Ocean);
+              //recArray[x][y].setFillColor(Ocean);
+              cells[x][y].isOcean = true; // do we care?
+              cells[x][y].isFish = false;
             }
             if(isNotBlocked) {
               // Turn water into wine but not fish into the Ocean, that's for the sharks
-              recArray2[destination][y].setFillColor(Ocean);
+              //recArray2[destination][y].setFillColor(Ocean);
+              cells[destination][y].isOcean = true;
+              cells[destination][y].isFish = false;
             }
             printf("IsFish: %d, IsNotBlocked: %d, willMoveNow: %d\n", isFish, isNotBlocked, willMoveNow);
           }
         }
       }
 
-      // MoveFishRight + New Fish
+      // TODO: Fix Direction Names
+      // // MoveFishRight + New Fish
+      // for(int y = 0; y < ydim; ++y) {
+      //   for(int x = xdim - 1; x > 0; --x) {
+      //     int destination = (x - 1) % xdim;
+      //     bool isFish = recArray[x][y].getFillColor() == Fish;
+      //     // We need to add additional checks now that rec2 has been populated
+      //     bool isNotBlocked = (recArray[destination][y].getFillColor() == Ocean) && (recArray2[destination][y].getFillColor() == Ocean);
+          
+      //     // Fish are now able to be in two places at once
+      //     bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
+      //     if(isFish && willMoveNow && isNotBlocked) {
+      //       recArray2[destination][y].setFillColor(Fish);
+      //       recArray2[x][y].setFillColor(Ocean);
+      //     } else {
+      //       // If we're not moving, we still need to state that in rect2
+      //       if(isFish) {
+      //         recArray2[x][y].setFillColor(Fish); 
+      //       }
+      //       else {
+      //         recArray[x][y].setFillColor(Ocean);
+      //       }
+      //       if(isNotBlocked) {
+      //         // Turn water into wine but not fish into the Ocean, that's for the sharks
+      //         recArray2[destination][y].setFillColor(Ocean);
+      //       }
+      //       printf("IsFish: %d, IsNotBlocked: %d, willMoveNow: %d\n", isFish, isNotBlocked, willMoveNow);
+      //     }
+      //   }
+      // }
       // MoveFishUp + New Fish
       // MoveFishDown + New Fish
       // MoveSharksLeft + EatFish
@@ -119,7 +170,12 @@ int main()
     // Pass buffer and clear
     for(int y = 0; y < ydim; ++y) {
       for(int x = 0; x < xdim; ++x) {
-        recArray[x][y].setFillColor(recArray2[x][y].getFillColor());
+        if(cells[x][y].isFish) {
+          recArray[x][y].setFillColor(sf::Color::Green);
+        } else {
+          recArray[x][y].setFillColor(sf::Color::Blue);
+        }
+        //recArray[x][y].setFillColor(recArray2[x][y].getFillColor());
         //recArray2[x][y].setFillColor(Ocean);
       }
     }
