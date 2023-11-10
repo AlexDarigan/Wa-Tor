@@ -152,6 +152,12 @@ int main()
       }
 
       // MoveSharksLeft + EatFish
+      // -- We can't just move everything in a direction at once in this case
+      // -- We need to get decisions per direction, then act on those directions
+      // -- We could check all fish to the left, then decided if the shark wants to eat them
+      // -- but maybe it decides no, but also there is no other fish
+      // ..alternatively, we could make a decision and then seperate them into four lists of eat direction
+      // ..
       // MoveSharksRight + EatFish
       // MoveSharksUp + EatFish
       // MoveSharksDown + EatFish
