@@ -36,11 +36,13 @@ struct Cell {
   bool isFish = false;
   bool isOcean = false;
   bool hasMoved = false;
+  bool wasFish = false;
+  bool willBeFish = false;
 };
 
 // Constants required by following arrays
-const int xdim = 100;
-const int ydim= 100;
+const int xdim = 10;
+const int ydim= 10;
 
 // Allocating arrays on the heap by moving them to the global scope
 sf::RectangleShape recArray[xdim][ydim];
@@ -95,81 +97,83 @@ int main()
         for(int x = 0; x < xdim; ++x) {
           int destination = (x + 1) % xdim;
           bool isFish = cells[x][y].isFish;
-          bool isNotBlocked = cells[destination][y].isOcean;
+          bool isNotBlocked = cells[destination][y].isOcean; // Not always Ocean check
           bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
           bool hasMoved = cells[x][y].hasMoved;
           if(isFish) { fishes++; }
           if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
-            cells[destination][y].isFish = true;
+            //cells[destination][y].isFish = true;
+            cells[destination][y].willBeFish = true;
             cells[destination][y].isOcean = false;
             cells[destination][y].hasMoved = true;
             cells[x][y].isFish = false;
-            cells[x][y].isOcean = true;
+            //cells[x][y].isOcean = true;
+            cells[x][y].wasFish = true;
           }
         }
       }
 
       // // TODO: Fix Direction Names
       // // // MoveFishLeft + New Fish
-      for(int y = 0; y < ydim; ++y) {
-        for(int x = xdim - 1; x > 0; --x) {
-          int destination = (x - 1) % xdim;
-          bool isFish = cells[x][y].isFish;
-          bool isNotBlocked = cells[destination][y].isOcean;
-          bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-          bool hasMoved = cells[x][y].hasMoved;
-          if(isFish) { fishes++; }
-          if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
-            cells[destination][y].isFish = true;
-            cells[destination][y].isOcean = false;
-            cells[destination][y].hasMoved = true;
-            cells[x][y].isFish = false;
-            cells[x][y].isOcean = true;
-          }
-        }
-      }
+      // for(int y = 0; y < ydim; ++y) {
+      //   for(int x = xdim - 1; x > 0; --x) {
+      //     int destination = (x - 1) % xdim;
+      //     bool isFish = cells[x][y].isFish;
+      //     bool isNotBlocked = cells[destination][y].isOcean;
+      //     bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
+      //     bool hasMoved = cells[x][y].hasMoved;
+      //     if(isFish) { fishes++; }
+      //     if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
+      //       cells[destination][y].isFish = true;
+      //       cells[destination][y].isOcean = false;
+      //       cells[destination][y].hasMoved = true;
+      //       cells[x][y].isFish = false;
+      //       cells[x][y].isOcean = true;
+      //     }
+      //   }
+      // }
 
       // Splits the screen for some reason (why meet in the middle?)
       
       // MoveFishUp + New Fish
-      for(int y = ydim - 1; y > -1; --y) {
-        for(int x = 0; x < xdim; ++x) {
-          int destination = (y - 1 + ydim) % ydim;
-          bool isFish = cells[x][y].isFish;
-          bool isNotBlocked = cells[x][destination].isOcean;
-          bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-          //bool isNotBlocked = true;
-          //bool willMoveNow = true;
-          bool hasMoved = cells[x][y].hasMoved;
-          if(isFish) { fishes++; }
-          if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
-            cells[x][destination].isFish = true;
-            cells[x][destination].isOcean = false;
-            cells[x][destination].hasMoved = true;
-            cells[x][y].isFish = false;
-            cells[x][y].isOcean = true;
-          }
-        }
-      }
+      // for(int y = ydim - 1; y > -1; --y) {
+      //   for(int x = 0; x < xdim; ++x) {
+      //     int destination = (y - 1 + ydim) % ydim;
+      //     bool isFish = cells[x][y].isFish;
+      //     bool isNotBlocked = cells[x][destination].isOcean;
+      //     bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
+      //     //bool isNotBlocked = true;
+      //     //bool willMoveNow = true;
+      //     bool hasMoved = cells[x][y].hasMoved;
+      //     if(isFish) { fishes++; }
+      //     if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
+      //       cells[x][destination].isFish = true;
+      //       cells[x][destination].isOcean = false;
+      //       cells[x][destination].hasMoved = true;
+      //       cells[x][y].isFish = false;
+      //       cells[x][y].isOcean = true;
+      //     }
+      //   }
+      // }
       
       //MoveFishDown + New Fish
-      for(int y = 0; y < ydim; ++y) {
-        for(int x = 0; x < xdim; ++x) {
-          int destination = (y + 1) % ydim;
-          bool isFish = cells[x][y].isFish;
-          bool isNotBlocked = cells[x][destination].isOcean;
-          bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-          bool hasMoved = cells[x][y].hasMoved;
-          if(isFish) { fishes++; }
-          if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
-            cells[x][destination].isFish = true;
-            cells[x][destination].isOcean = false;
-            cells[x][destination].hasMoved = true;
-            cells[x][y].isFish = false;
-            cells[x][y].isOcean = true;
-          }
-        }
-      }
+      // for(int y = 0; y < ydim; ++y) {
+      //   for(int x = 0; x < xdim; ++x) {
+      //     int destination = (y + 1) % ydim;
+      //     bool isFish = cells[x][y].isFish;
+      //     bool isNotBlocked = cells[x][destination].isOcean;
+      //     bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
+      //     bool hasMoved = cells[x][y].hasMoved;
+      //     if(isFish) { fishes++; }
+      //     if(isFish && willMoveNow && isNotBlocked && !hasMoved) {
+      //       cells[x][destination].isFish = true;
+      //       cells[x][destination].isOcean = false;
+      //       cells[x][destination].hasMoved = true;
+      //       cells[x][y].isFish = false;
+      //       cells[x][y].isOcean = true;
+      //     }
+      //   }
+      // }
       // // MoveSharksLeft + EatFish
       // MoveSharksRight + EatFish
       // MoveSharksUp + EatFish
@@ -180,6 +184,13 @@ int main()
     for(int y = 0; y < ydim; ++y) {
       for(int x = 0; x < xdim; ++x) {
         cells[x][y].hasMoved = false;
+        if(cells[x][y].wasFish) {
+          cells[x][y].wasFish = false;
+          cells[x][y].isOcean = true;
+        } else if(cells[x][y].willBeFish) {
+          cells[x][y].willBeFish = false;
+          cells[x][y].isFish = true;
+        }
         if(cells[x][y].isFish) {
           recArray[x][y].setFillColor(sf::Color::Green);
         } else {
@@ -189,25 +200,18 @@ int main()
     }
     fishes = 0;    
 
-    
-
-    
-
-	
-	
 	//loop these three lines to draw frames
-  window.clear(sf::Color::Black);
-	for(int i=0;i<xdim;++i){
-	  for(int k=0;k<ydim;++k){
-	      window.draw(recArray[i][k]);
-	    }
-	  }
+    window.clear(sf::Color::Black);
+    for(int i=0;i<xdim;++i){
+      for(int k=0;k<ydim;++k){
+        window.draw(recArray[i][k]);
+      }
+    }
       sf::sleep(sf::seconds(1));
       window.display();
-    }
+      
+  }
     
-
-
     return 0;
 }
 
