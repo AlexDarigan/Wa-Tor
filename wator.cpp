@@ -180,20 +180,6 @@ int main()
             break;
           }
         }
-
-        // cells[x][y].hasMoved = false;
-        // if(cells[x][y].wasFish) {
-        //   cells[x][y].wasFish = false;
-        //   cells[x][y].isOcean = true;
-        // } else if(cells[x][y].willBeFish) {
-        //   cells[x][y].willBeFish = false;
-        //   cells[x][y].isFish = true;
-        // }
-        // if(cells[x][y].isFish) {
-        //   recArray[x][y].setFillColor(sf::Color::Green);
-        // } else {
-        //   recArray[x][y].setFillColor(sf::Color::Blue);
-        // }
       }
     }
     fishes = 0;    
