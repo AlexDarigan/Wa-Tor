@@ -33,6 +33,7 @@
 
 // Defining structs because we need more information (like "moved this round")
 
+enum Direction { North, East, South, West };
 enum CellType { Ocean, Fish, PastFish, FutureFish, Shark, PastShark, FutureShark };
 
 struct Cell {
@@ -79,7 +80,6 @@ int main()
     }
   }
 
-    int fishes = 0;
     sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
    
 
@@ -100,7 +100,6 @@ int main()
           bool isFish = cells[x][y].celltype == CellType::Fish;
           bool isNotBlocked = cells[destination][y].celltype == CellType::Ocean; 
           bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-          if(isFish) { fishes++; } // We're duplicating a number here because there is no "Standstill fish"
           if(isFish && willMoveNow && isNotBlocked) {
             cells[destination][y].celltype = CellType::FutureFish;
             cells[x][y].celltype = CellType::PastFish;
@@ -155,15 +154,60 @@ int main()
       for(int y = 0; y < ydim; ++y) {
         for(int x = 0; x < xdim; ++x) {
           if(cells[x][y].celltype != CellType::Fish) { continue; }
-          for(int direction = 1; direction < 4; ++direction) {
-            int targetCardinal = (srand() % direction) % 4;
-            // Get target cardinal
-            // Check if free
-            // Otherwise remove cardinal, check next
-            // if none free, stay
+          int direction = rand() % 4;
+          int options = 4;
+          while((cells[x][y].celltype == CellType::Fish) && (options > 0)) {
+            switch(direction) {
+              case Direction::North: {
+                  int destination = (y - 1 + ydim) % ydim;
+                  bool isNotBlocked = cells[x][destination].celltype == CellType::Ocean; 
+                  if(isNotBlocked) {
+                    cells[x][destination].celltype = CellType::FutureFish;
+                    cells[x][y].celltype = CellType::PastFish;
+                  }
+                  break;
+                }  
+                case Direction::East: {
+                    int destination = (x + 1) % xdim;
+                    bool isNotBlocked = cells[destination][y].celltype == CellType::Ocean; 
+                    if(isNotBlocked) {
+                      cells[destination][y].celltype = CellType::FutureFish;
+                      cells[x][y].celltype = CellType::PastFish;
+                    }
+                    break;
+                } 
+                case Direction::South: {
+                    int destination = (y + 1) % ydim;
+                    bool isNotBlocked = cells[y][destination].celltype == CellType::Ocean; 
+                    if(isNotBlocked) {
+                      cells[x][destination].celltype = CellType::FutureFish;
+                      cells[x][y].celltype = CellType::PastFish;
+                    }
+                    break;
+                }
+                case Direction::West: {
+                    int destination = (x - 1 + xdim) % xdim;
+                    bool isNotBlocked = cells[destination][y].celltype == CellType::Ocean; 
+                    if(isNotBlocked) {
+                      cells[destination][y].celltype = CellType::FutureFish;
+                      cells[x][y].celltype = CellType::PastFish;
+                    }
+                    break;
+                }
+            }
+              --options;
+              // Move to the next direction, wrap if near boundaries with options left
+              direction = (direction + 1) % 4;
+            }
+            if(cells[x][y].celltype == CellType::Fish) {
+              // If we're still a fish (ie have not moved, then set as past fish)
+              // ..this is unnecessary but useful for debugging new fish
+              cells[x][y].celltype = CellType::PastFish;
+            }
           }
         }
-      }
+    //   }
+    // }
 
       // MoveSharksLeft + EatFish
       // -- We can't just move everything in a direction at once in this case
@@ -177,7 +221,8 @@ int main()
       // MoveSharksDown + EatFish
 
     // Pass buffer and clear
-    printf("Fishes: %d\n", fishes);
+
+
     for(int y = 0; y < ydim; ++y) {
       for(int x = 0; x < xdim; ++x) {
         switch(cells[x][y].celltype) {
@@ -203,7 +248,17 @@ int main()
         }
       }
     }
-    fishes = 0;    
+
+    int fishes = 0;
+    for(int x = 0; x < xdim; ++x) {
+      for(int y = 0; y < ydim; ++y) {
+        if(cells[x][y].celltype == CellType::Fish) {
+          fishes++;
+        }
+      }
+    }
+    printf("Fishes: %d", fishes);
+
 
 	//loop these three lines to draw frames
     window.clear(sf::Color::Black);
