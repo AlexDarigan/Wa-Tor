@@ -100,22 +100,6 @@ int main()
             cells[destination][y].hasMoved = true;
             cells[x][y].isFish = false;
             cells[x][y].isOcean = true;
-          } else {
-            // If we're not moving, we still need to state that in rect2
-            if(isFish) {
-              cells[x][y].isFish = true;
-              cells[x][y].isOcean = false;
-            }
-            else {
-              cells[x][y].isOcean = true; // do we care?
-              cells[x][y].isFish = false;
-            }
-            if(isNotBlocked) {
-              // Turn water into wine but not fish into the Ocean, that's for the sharks
-              cells[destination][y].isOcean = true;
-              cells[destination][y].isFish = false;
-            }
-            printf("IsFish: %d, IsNotBlocked: %d, willMoveNow: %d\n", isFish, isNotBlocked, willMoveNow);
           }
         }
       }
@@ -135,22 +119,6 @@ int main()
             cells[destination][y].hasMoved = true;
             cells[x][y].isFish = false;
             cells[x][y].isOcean = true;
-          } else {
-            // If we're not moving, we still need to state that in rect2
-            if(isFish) {
-              cells[x][y].isFish = true;
-              cells[x][y].isOcean = false;
-            }
-            else {
-              cells[x][y].isFish = false;
-              cells[x][y].isOcean = true;
-            }
-            if(isNotBlocked) {
-              // Turn water into wine but not fish into the Ocean, that's for the sharks
-              cells[destination][y].isFish = false;
-              cells[destination][y].isOcean = true;
-            }
-            printf("IsFish: %d, IsNotBlocked: %d, willMoveNow: %d\n", isFish, isNotBlocked, willMoveNow);
           }
         }
       }
