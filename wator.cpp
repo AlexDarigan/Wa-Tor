@@ -63,8 +63,8 @@ int main()
       recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
       int id=i*1-+k;
-      if (id%2==0) { 
-      //if(i == 0 && k == 0) {  
+      //if (id%2==0) { 
+      if(i == 0 && k == 0) {  
         recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Fish;
       }
@@ -104,7 +104,7 @@ int main()
         }
       }
 
-      // MoveFishLeft + New Fish
+      // // MoveFishLeft + New Fish
       for(int y = 0; y < ydim; ++y) {
         for(int x = xdim - 1; x > 0; --x) {
           int destination = (x - 1) % xdim;
@@ -121,34 +121,34 @@ int main()
 
       
       // MoveFishUp + New Fish
-      for(int y = ydim - 1; y > -1; --y) {
-        for(int x = 0; x < xdim; ++x) {
-          int destination = (y - 1 + ydim) % ydim;
-          bool isFish = cells[x][y].celltype == CellType::Fish;
-          bool isNotBlocked = cells[x][destination].celltype == CellType::Ocean;
-          bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-          if(isFish) { fishes++; }
-          if(isFish && willMoveNow && isNotBlocked) {
-            cells[x][destination].celltype = CellType::FutureFish;
-            cells[x][y].celltype = CellType::PastFish;
-          }
-        }
-      }
+      // for(int y = ydim - 1; y > -1; --y) {
+      //   for(int x = 0; x < xdim; ++x) {
+      //     int destination = (y - 1 + ydim) % ydim;
+      //     bool isFish = cells[x][y].celltype == CellType::Fish;
+      //     bool isNotBlocked = cells[x][destination].celltype == CellType::Ocean;
+      //     bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
+      //     if(isFish) { fishes++; }
+      //     if(isFish && willMoveNow && isNotBlocked) {
+      //       cells[x][destination].celltype = CellType::FutureFish;
+      //       cells[x][y].celltype = CellType::PastFish;
+      //     }
+      //   }
+      // }
       
       //MoveFishDown + New Fish
-      for(int y = 0; y < ydim; ++y) {
-        for(int x = 0; x < xdim; ++x) {
-          int destination = (y + 1) % ydim;
-          bool isFish = cells[x][y].celltype == CellType::Fish;
-          bool isNotBlocked = cells[x][destination].celltype == CellType::Ocean;
-          bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-          if(isFish) { fishes++; }
-          if(isFish && willMoveNow && isNotBlocked) {
-            cells[x][destination].celltype = CellType::FutureFish;
-            cells[x][y].celltype = CellType::PastFish;
-          }
-        }
-      }
+      // for(int y = 0; y < ydim; ++y) {
+      //   for(int x = 0; x < xdim; ++x) {
+      //     int destination = (y + 1) % ydim;
+      //     bool isFish = cells[x][y].celltype == CellType::Fish;
+      //     bool isNotBlocked = cells[x][destination].celltype == CellType::Ocean;
+      //     bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
+      //     if(isFish) { fishes++; }
+      //     if(isFish && willMoveNow && isNotBlocked) {
+      //       cells[x][destination].celltype = CellType::FutureFish;
+      //       cells[x][y].celltype = CellType::PastFish;
+      //     }
+      //   }
+      // }
 
       // MoveSharksLeft + EatFish
       // MoveSharksRight + EatFish
