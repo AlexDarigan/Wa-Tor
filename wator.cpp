@@ -200,9 +200,9 @@ int main()
               direction = (direction + 1) % 4;
             }
             if(cells[x][y].celltype == CellType::Fish) {
-              // If we're still a fish (ie have not moved, then set as past fish)
+              // If we're still a fish (ie have not moved, then set as future fish)
               // ..this is unnecessary but useful for debugging new fish
-              cells[x][y].celltype = CellType::PastFish;
+              cells[x][y].celltype = CellType::FutureFish;
             }
           }
         }
@@ -249,6 +249,7 @@ int main()
       }
     }
 
+    // Not working properly, too many fishes
     int fishes = 0;
     for(int x = 0; x < xdim; ++x) {
       for(int y = 0; y < ydim; ++y) {
@@ -257,7 +258,7 @@ int main()
         }
       }
     }
-    printf("Fishes: %d", fishes);
+    printf("Fishes: %d\n", fishes);
 
 
 	//loop these three lines to draw frames
