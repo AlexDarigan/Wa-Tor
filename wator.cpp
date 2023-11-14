@@ -33,7 +33,7 @@
 
 // Defining structs because we need more information (like "moved this round")
 
-enum Direction { North, East, South, West };
+enum Direction { North = 0, East = 1, South = 2, West = 3 };
 enum CellType { Ocean, Fish, PastFish, FutureFish, Shark, PastShark, FutureShark };
 
 struct Cell {
@@ -153,13 +153,13 @@ int main()
       // Handle all the fish who have not yet moved
       for(int y = 0; y < ydim; ++y) {
         for(int x = 0; x < xdim; ++x) {
-          if(cells[x][y].celltype != CellType::Fish) { continue; }
+          //if(cells[x][y].celltype != CellType::Fish) { continue; }
           int direction = rand() % 4;
           int options = 4;
           while((cells[x][y].celltype == CellType::Fish) && (options > 0)) {
             switch(direction) {
               case Direction::North: {
-                  int destination = (y - 1 + ydim) % ydim;
+                  int destination = ((y - 1) + ydim) % ydim;
                   bool isNotBlocked = cells[x][destination].celltype == CellType::Ocean; 
                   if(isNotBlocked) {
                     cells[x][destination].celltype = CellType::FutureFish;
@@ -177,8 +177,8 @@ int main()
                     break;
                 } 
                 case Direction::South: {
-                    int destination = (y + 1) % ydim;
-                    bool isNotBlocked = cells[y][destination].celltype == CellType::Ocean; 
+                    int destination = ((y + 1)) % ydim;
+                    bool isNotBlocked = cells[x][destination].celltype == CellType::Ocean; 
                     if(isNotBlocked) {
                       cells[x][destination].celltype = CellType::FutureFish;
                       cells[x][y].celltype = CellType::PastFish;
@@ -186,7 +186,7 @@ int main()
                     break;
                 }
                 case Direction::West: {
-                    int destination = (x - 1 + xdim) % xdim;
+                    int destination = ((x - 1) + xdim) % xdim;
                     bool isNotBlocked = cells[destination][y].celltype == CellType::Ocean; 
                     if(isNotBlocked) {
                       cells[destination][y].celltype = CellType::FutureFish;
@@ -197,13 +197,14 @@ int main()
             }
               --options;
               // Move to the next direction, wrap if near boundaries with options left
+              printf("\nDirection: %d/n", direction);
               direction = (direction + 1) % 4;
             }
-            if(cells[x][y].celltype == CellType::Fish) {
-              // If we're still a fish (ie have not moved, then set as future fish)
-              // ..this is unnecessary but useful for debugging new fish
-              cells[x][y].celltype = CellType::FutureFish;
-            }
+            // if(cells[x][y].celltype == CellType::Fish) {
+            //   // If we're still a fish (ie have not moved, then set as future fish)
+            //   // ..this is unnecessary but useful for debugging new fish
+            //   cells[x][y].celltype = CellType::FutureFish;
+            // }
           }
         }
     //   }
