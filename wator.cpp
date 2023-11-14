@@ -53,14 +53,19 @@ sf::RectangleShape recArray[xdim][ydim];
 sf::RectangleShape recArray2[xdim][ydim];
 Cell cells[xdim][ydim];
 
+bool willMove(int x, int y, int destX, int destY) {
+  return (
+    (cells[x][y].celltype == CellType::Fish) 
+    && cells[destX][destY].celltype == Ocean 
+    && (rand() % 2) == 1 // Yes / No
+  );
+}
+
 void moveFishHorizontally(int dir) {
   for(int y = 0; y < ydim; ++y) {
     for(int x = 0; x < xdim; ++x) {
       int destination = ((x + 1 * dir) + xdim) % xdim;
-      bool isFish = cells[x][y].celltype == CellType::Fish;
-      bool isNotBlocked = cells[destination][y].celltype == CellType::Ocean; 
-      bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-      if(isFish && willMoveNow && isNotBlocked) {
+      if(willMove(x, y, destination, y)) {
         cells[destination][y].celltype = CellType::FutureFish;
         cells[x][y].celltype = CellType::PastFish;
       }
@@ -74,11 +79,7 @@ void moveFishVertically(int dir) {
     for(int x = 0; x < xdim; ++x) {
       // Need to add the ydim so that we can stay in the positive to prevent weird offset errors
       int destination = ((y + 1 * dir) + ydim) % ydim;
-      bool isFish = cells[x][y].celltype == CellType::Fish;
-      bool isNotBlocked = cells[x][destination].celltype == CellType::Ocean;
-      //bool willMoveNow = (rand() % 2) == 1; // 1 - Yes / 0 - No
-      bool willMoveNow = true;
-      if(isFish && willMoveNow && isNotBlocked) {
+      if(willMove(x, y, x, destination)) {
         cells[x][destination].celltype = CellType::FutureFish;
         cells[x][y].celltype = CellType::PastFish;
       }
