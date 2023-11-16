@@ -117,6 +117,47 @@ void moveLazyFish() {
     }
 }
 
+void applyMovement() {
+  for(int y = 0; y < DIMENSIONS; ++y) {
+    for(int x = 0; x < DIMENSIONS; ++x) {
+      switch(cells[x][y].celltype) {
+        case CellType::Ocean: {
+          recArray[x][y].setFillColor(sf::Color::Blue);
+          break;
+        }
+        case CellType::Fish: {
+          recArray[x][y].setFillColor(sf::Color::Green);
+          // No Cells should be fish unless surrounded
+          break;
+        }
+        case CellType::PastFish: {
+          recArray[x][y].setFillColor(sf::Color::Blue);
+          cells[x][y].celltype = CellType::Ocean;
+          break;
+        }
+        case CellType::FutureFish: {
+          recArray[x][y].setFillColor(sf::Color::Green);
+          cells[x][y].celltype = CellType::Fish;
+          break;
+        }
+      }
+    }
+  }
+}
+
+void countFish() {
+    // Not working properly, too many fishes
+    int fishes = 0;
+    for(int x = 0; x < DIMENSIONS; ++x) {
+      for(int y = 0; y < DIMENSIONS; ++y) {
+        if(cells[x][y].celltype == CellType::Fish) {
+          fishes++;
+        }
+      }
+    }
+    printf("Fishes: %d\n", fishes);
+  }
+
 
 int main()
 {
@@ -168,10 +209,7 @@ int main()
       moveFish(STANDSTILL, UP);
       moveFish(STANDSTILL, DOWN);
       moveLazyFish();
-     
-    //   }
-    // }
-  
+
 
       // MoveSharksLeft + EatFish
       // -- We can't just move everything in a direction at once in this case
@@ -183,49 +221,13 @@ int main()
       // MoveSharksRight + EatFish
       // MoveSharksUp + EatFish
       // MoveSharksDown + EatFish
+      applyMovement();
+      countFish();
 
-    // Pass buffer and clear
-
-
-    for(int y = 0; y < DIMENSIONS; ++y) {
-      for(int x = 0; x < DIMENSIONS; ++x) {
-        switch(cells[x][y].celltype) {
-          case CellType::Ocean: {
-            recArray[x][y].setFillColor(sf::Color::Blue);
-            break;
-          }
-          case CellType::Fish: {
-            recArray[x][y].setFillColor(sf::Color::Green);
-            // No Cells should be fish unless surrounded
-            break;
-          }
-          case CellType::PastFish: {
-            recArray[x][y].setFillColor(sf::Color::Blue);
-            cells[x][y].celltype = CellType::Ocean;
-            break;
-          }
-          case CellType::FutureFish: {
-            recArray[x][y].setFillColor(sf::Color::Green);
-            cells[x][y].celltype = CellType::Fish;
-            break;
-          }
-        }
-      }
-    }
-
-    // Not working properly, too many fishes
-    int fishes = 0;
-    for(int x = 0; x < DIMENSIONS; ++x) {
-      for(int y = 0; y < DIMENSIONS; ++y) {
-        if(cells[x][y].celltype == CellType::Fish) {
-          fishes++;
-        }
-      }
-    }
-    printf("Fishes: %d\n", fishes);
+   
 
 
-	//loop these three lines to draw frames
+    // Draw Window
     window.clear(sf::Color::Black);
     for(int i=0;i<DIMENSIONS;++i){
       for(int k=0;k<DIMENSIONS;++k){
