@@ -78,6 +78,48 @@ void moveFish(int xDirection, int yDirection, bool overrideFreeWill = false) {
   }
 }
 
+void moveLazyFish() {
+  // Handle all the fish who have not yet moved
+  for(int y = 0; y < ydim; ++y) {
+    for(int x = 0; x < xdim; ++x) {
+      int direction = rand() % 4;
+      int options = 4;
+      while((cells[x][y].celltype == CellType::Fish) && (options > 0)) {
+        switch(direction) {
+          case Direction::North: {
+              moveFish(STANDSTILL, UP, OVERRIDING_FREEWILL);
+              break;
+            }  
+            case Direction::East: {
+              moveFish(RIGHT, STANDSTILL, OVERRIDING_FREEWILL);
+              break;
+            } 
+            case Direction::South: {
+              moveFish(STANDSTILL, DOWN, OVERRIDING_FREEWILL);
+              break;
+            }
+            case Direction::West: {
+              moveFish(LEFT, STANDSTILL, OVERRIDING_FREEWILL);
+              break;
+            }
+            default:
+              break;
+        }
+          --options;
+          // Move to the next direction, wrap if near boundaries with options left
+          printf("\nDirection: %d/n", direction);
+          direction = (direction + 1) % 4;
+        }
+        printf("----\n");
+        if(cells[x][y].celltype == CellType::Fish) {
+          // If we're still a fish (ie have not moved, then set as future fish)
+          // ..this is unnecessary but useful for debugging new fish
+          cells[x][y].celltype = CellType::FutureFish;
+        }
+      }
+    }
+}
+
 
 int main()
 {
@@ -128,47 +170,8 @@ int main()
       moveFish(LEFT, STANDSTILL);
       moveFish(STANDSTILL, UP);
       moveFish(STANDSTILL, DOWN);
-  
+      moveLazyFish();
      
-      // Handle all the fish who have not yet moved
-      for(int y = 0; y < ydim; ++y) {
-        for(int x = 0; x < xdim; ++x) {
-          int direction = rand() % 4;
-          int options = 4;
-          while((cells[x][y].celltype == CellType::Fish) && (options > 0)) {
-            switch(direction) {
-              case Direction::North: {
-                  moveFish(STANDSTILL, UP, OVERRIDING_FREEWILL);
-                  break;
-                }  
-                case Direction::East: {
-                  moveFish(RIGHT, STANDSTILL, OVERRIDING_FREEWILL);
-                  break;
-                } 
-                case Direction::South: {
-                  moveFish(STANDSTILL, DOWN, OVERRIDING_FREEWILL);
-                  break;
-                }
-                case Direction::West: {
-                  moveFish(LEFT, STANDSTILL, OVERRIDING_FREEWILL);
-                  break;
-                }
-                default:
-                  break;
-            }
-              --options;
-              // Move to the next direction, wrap if near boundaries with options left
-              printf("\nDirection: %d/n", direction);
-              direction = (direction + 1) % 4;
-            }
-            printf("----\n");
-            if(cells[x][y].celltype == CellType::Fish) {
-              // If we're still a fish (ie have not moved, then set as future fish)
-              // ..this is unnecessary but useful for debugging new fish
-              cells[x][y].celltype = CellType::FutureFish;
-            }
-          }
-        }
     //   }
     // }
   
