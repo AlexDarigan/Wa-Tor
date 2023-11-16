@@ -5,11 +5,6 @@
 // Author: David Darigan
 // Maintainer: David Darigan
 // Created: Fri Nov  9
-// Last-Updated: Fri Nov  9
-//           By: David
-//     Update #: 1
-// 
-// 
 
 // Commentary: 
 // 
@@ -48,6 +43,8 @@ const int UP = -1;
 const int DOWN = 1;
 const int RIGHT = 1;
 const int LEFT = -1;
+const int STANDSTILL = 0;
+const bool OVERRIDING_FREEWILL = true;
 
 // Allocating arrays on the heap by moving them to the global scope
 sf::RectangleShape recArray[xdim][ydim];
@@ -63,33 +60,24 @@ bool willMove(int x, int y, int destX, int destY, bool overrideFreeWill) {
 }
 
 int getNextMove(int location, int direction) {
+  // If direction is STANDSTILL (0), then we perform a roundabout to the original location
   return (location + (1 * direction) + DIMENSIONS) % DIMENSIONS;
 }
 
 
-void moveFishHorizontally(int dir, bool overrideFreeWill = false) {
+void moveFish(int xDirection, int yDirection, bool overrideFreeWill = false) {
   for(int y = 0; y < ydim; ++y) {
     for(int x = 0; x < xdim; ++x) {
-      int destination = getNextMove(x, dir);
-      if(willMove(x, y, destination, y, overrideFreeWill)) {
-        cells[destination][y].celltype = CellType::FutureFish;
+      int xDestination = getNextMove(x, xDirection);
+      int yDestination = getNextMove(y, yDirection);
+      if(willMove(x, y, xDestination, yDestination, overrideFreeWill)) {
+        cells[xDestination][yDestination].celltype = CellType::FutureFish;
         cells[x][y].celltype = CellType::PastFish;
       }
     }
   }
 }
 
-void moveFishVertically(int dir, bool overrideFreeWill = false) {
-  for(int y = 0; y < ydim; ++y) {
-    for(int x = 0; x < xdim; ++x) {
-      int destination = getNextMove(y, dir);
-      if(willMove(x, y, x, destination, overrideFreeWill)) {
-        cells[x][destination].celltype = CellType::FutureFish;
-        cells[x][y].celltype = CellType::PastFish;
-      }
-    }
-  }
-}
 
 int main()
 {
@@ -136,35 +124,37 @@ int main()
                 window.close();
         }
   
-      moveFishHorizontally(RIGHT);
-      moveFishHorizontally(LEFT);
-      moveFishVertically(UP);
-      moveFishVertically(DOWN);
+      moveFish(RIGHT, STANDSTILL);
+      moveFish(LEFT, STANDSTILL);
+      moveFish(STANDSTILL, UP);
+      moveFish(STANDSTILL, DOWN);
+  
      
       // Handle all the fish who have not yet moved
       for(int y = 0; y < ydim; ++y) {
         for(int x = 0; x < xdim; ++x) {
-          //if(cells[x][y].celltype != CellType::Fish) { continue; }
           int direction = rand() % 4;
           int options = 4;
           while((cells[x][y].celltype == CellType::Fish) && (options > 0)) {
             switch(direction) {
               case Direction::North: {
-                  moveFishVertically(UP, true);
+                  moveFish(STANDSTILL, UP, OVERRIDING_FREEWILL);
                   break;
                 }  
                 case Direction::East: {
-                  moveFishHorizontally(RIGHT, true);
+                  moveFish(RIGHT, STANDSTILL, OVERRIDING_FREEWILL);
                   break;
                 } 
                 case Direction::South: {
-                  moveFishVertically(DOWN, true);
+                  moveFish(STANDSTILL, DOWN, OVERRIDING_FREEWILL);
                   break;
                 }
                 case Direction::West: {
-                  moveFishHorizontally(LEFT, true);
+                  moveFish(LEFT, STANDSTILL, OVERRIDING_FREEWILL);
                   break;
                 }
+                default:
+                  break;
             }
               --options;
               // Move to the next direction, wrap if near boundaries with options left
