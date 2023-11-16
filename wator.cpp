@@ -37,8 +37,6 @@ struct Cell {
 
 // Constants required by following arrays
 const int DIMENSIONS = 10; // Shape is a square so x and y arrays are the same dimensions
-const int xdim = 10;
-const int ydim= 10;
 const int UP = -1;
 const int DOWN = 1;
 const int RIGHT = 1;
@@ -47,15 +45,15 @@ const int STANDSTILL = 0;
 const bool OVERRIDING_FREEWILL = true;
 
 // Allocating arrays on the heap by moving them to the global scope
-sf::RectangleShape recArray[xdim][ydim];
-sf::RectangleShape recArray2[xdim][ydim];
-Cell cells[xdim][ydim];
+sf::RectangleShape recArray[DIMENSIONS][DIMENSIONS];
+sf::RectangleShape recArray2[DIMENSIONS][DIMENSIONS]; // Removing this causes segfault for some reason
+Cell cells[DIMENSIONS][DIMENSIONS];
 
 bool willMove(int x, int y, int destX, int destY, bool overrideFreeWill) {
   return (
     (cells[x][y].celltype == CellType::Fish) 
     && cells[destX][destY].celltype == Ocean 
-    && (overrideFreeWill || (rand() % 2) == 1) // Yes / No / Divine Intervention
+    && (overrideFreeWill || (rand() % 2) == 1) // (Yes / No) OR Divine Intervention
   );
 }
 
@@ -66,8 +64,8 @@ int getNextMove(int location, int direction) {
 
 
 void moveFish(int xDirection, int yDirection, bool overrideFreeWill = false) {
-  for(int y = 0; y < ydim; ++y) {
-    for(int x = 0; x < xdim; ++x) {
+  for(int y = 0; y < DIMENSIONS; ++y) {
+    for(int x = 0; x < DIMENSIONS; ++x) {
       int xDestination = getNextMove(x, xDirection);
       int yDestination = getNextMove(y, yDirection);
       if(willMove(x, y, xDestination, yDestination, overrideFreeWill)) {
@@ -80,8 +78,8 @@ void moveFish(int xDirection, int yDirection, bool overrideFreeWill = false) {
 
 void moveLazyFish() {
   // Handle all the fish who have not yet moved
-  for(int y = 0; y < ydim; ++y) {
-    for(int x = 0; x < xdim; ++x) {
+  for(int y = 0; y < DIMENSIONS; ++y) {
+    for(int x = 0; x < DIMENSIONS; ++x) {
       int direction = rand() % 4;
       int options = 4;
       while((cells[x][y].celltype == CellType::Fish) && (options > 0)) {
@@ -107,7 +105,6 @@ void moveLazyFish() {
         }
           --options;
           // Move to the next direction, wrap if near boundaries with options left
-          printf("\nDirection: %d/n", direction);
           direction = (direction + 1) % 4;
         }
         printf("----\n");
@@ -126,13 +123,13 @@ int main()
   srand(0);
   int WindowXSize=800;
   int WindowYSize=600;
-  int cellXSize=WindowXSize/xdim;
-  int cellYSize=WindowYSize/ydim;
+  int cellXSize=WindowXSize/DIMENSIONS;
+  int cellYSize=WindowYSize/DIMENSIONS;
 
-  for(int i=0;i<xdim;++i){
-    recArray[xdim][ydim].setFillColor(sf::Color::Blue);
-    for(int k=0;k<ydim;++k){//give each one a size, position and color
-      recArray2[i][k].setFillColor(sf::Color::Blue);
+  for(int i=0;i<DIMENSIONS;++i){
+    recArray[DIMENSIONS][DIMENSIONS].setFillColor(sf::Color::Blue);
+    for(int k=0;k<DIMENSIONS;++k){//give each one a size, position and color
+      // recArray2[i][k].setFillColor(sf::Color::Blue);
       recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
       int id=i*1-+k;
@@ -190,8 +187,8 @@ int main()
     // Pass buffer and clear
 
 
-    for(int y = 0; y < ydim; ++y) {
-      for(int x = 0; x < xdim; ++x) {
+    for(int y = 0; y < DIMENSIONS; ++y) {
+      for(int x = 0; x < DIMENSIONS; ++x) {
         switch(cells[x][y].celltype) {
           case CellType::Ocean: {
             recArray[x][y].setFillColor(sf::Color::Blue);
@@ -218,8 +215,8 @@ int main()
 
     // Not working properly, too many fishes
     int fishes = 0;
-    for(int x = 0; x < xdim; ++x) {
-      for(int y = 0; y < ydim; ++y) {
+    for(int x = 0; x < DIMENSIONS; ++x) {
+      for(int y = 0; y < DIMENSIONS; ++y) {
         if(cells[x][y].celltype == CellType::Fish) {
           fishes++;
         }
@@ -230,8 +227,8 @@ int main()
 
 	//loop these three lines to draw frames
     window.clear(sf::Color::Black);
-    for(int i=0;i<xdim;++i){
-      for(int k=0;k<ydim;++k){
+    for(int i=0;i<DIMENSIONS;++i){
+      for(int k=0;k<DIMENSIONS;++k){
         window.draw(recArray[i][k]);
       }
     }
