@@ -41,6 +41,7 @@ struct Cell {
 };
 
 // Constants required by following arrays
+const int DIMENSIONS = 10; // Shape is a square so x and y arrays are the same dimensions
 const int xdim = 10;
 const int ydim= 10;
 const int UP = -1;
@@ -53,19 +54,24 @@ sf::RectangleShape recArray[xdim][ydim];
 sf::RectangleShape recArray2[xdim][ydim];
 Cell cells[xdim][ydim];
 
-bool willMove(int x, int y, int destX, int destY) {
+bool willMove(int x, int y, int destX, int destY, bool overrideFreeWill) {
   return (
     (cells[x][y].celltype == CellType::Fish) 
     && cells[destX][destY].celltype == Ocean 
-    && (rand() % 2) == 1 // Yes / No
+    && (overrideFreeWill || (rand() % 2) == 1) // Yes / No / Divine Intervention
   );
 }
 
-void moveFishHorizontally(int dir) {
+int getNextMove(int location, int direction) {
+  return (location + (1 * direction) + DIMENSIONS) % DIMENSIONS;
+}
+
+
+void moveFishHorizontally(int dir, bool overrideFreeWill = false) {
   for(int y = 0; y < ydim; ++y) {
     for(int x = 0; x < xdim; ++x) {
-      int destination = ((x + 1 * dir) + xdim) % xdim;
-      if(willMove(x, y, destination, y)) {
+      int destination = getNextMove(x, dir);
+      if(willMove(x, y, destination, y, overrideFreeWill)) {
         cells[destination][y].celltype = CellType::FutureFish;
         cells[x][y].celltype = CellType::PastFish;
       }
@@ -73,13 +79,11 @@ void moveFishHorizontally(int dir) {
   }
 }
 
-
-void moveFishVertically(int dir) {
+void moveFishVertically(int dir, bool overrideFreeWill = false) {
   for(int y = 0; y < ydim; ++y) {
     for(int x = 0; x < xdim; ++x) {
-      // Need to add the ydim so that we can stay in the positive to prevent weird offset errors
-      int destination = ((y + 1 * dir) + ydim) % ydim;
-      if(willMove(x, y, x, destination)) {
+      int destination = getNextMove(y, dir);
+      if(willMove(x, y, x, destination, overrideFreeWill)) {
         cells[x][destination].celltype = CellType::FutureFish;
         cells[x][y].celltype = CellType::PastFish;
       }
@@ -102,13 +106,13 @@ int main()
       recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
       int id=i*1-+k;
-      // if(false)
-      // //if(id%10==0) {
-      //   recArray[i][k].setFillColor(sf::Color::Red);
-      //   cells[i][k].celltype = CellType::Shark;
-      // }
-      //else if (id%2==0) { 
-      if(i == 3 && k == 0) {  
+      //if(false)
+      if(id%10==0) {
+        recArray[i][k].setFillColor(sf::Color::Red);
+        cells[i][k].celltype = CellType::Shark;
+      }
+      else if (id%2==0) { 
+      //if(i == 3 && k == 0) {  
         recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Fish;
       }
@@ -138,64 +142,46 @@ int main()
       moveFishVertically(DOWN);
      
       // Handle all the fish who have not yet moved
-    //   for(int y = 0; y < ydim; ++y) {
-    //     for(int x = 0; x < xdim; ++x) {
-    //       //if(cells[x][y].celltype != CellType::Fish) { continue; }
-    //       int direction = rand() % 4;
-    //       int options = 4;
-    //       while((cells[x][y].celltype == CellType::Fish) && (options > 0)) {
-    //         switch(direction) {
-    //           case Direction::North: {
-    //               int destination = ((y - 1) + ydim) % ydim;
-    //               bool isNotBlocked = cells[x][destination].celltype == CellType::Ocean; 
-    //               if(isNotBlocked) {
-    //                 cells[x][destination].celltype = CellType::FutureFish;
-    //                 cells[x][y].celltype = CellType::PastFish;
-    //               }
-    //               break;
-    //             }  
-    //             case Direction::East: {
-    //                 int destination = (x + 1) % xdim;
-    //                 bool isNotBlocked = cells[destination][y].celltype == CellType::Ocean; 
-    //                 if(isNotBlocked) {
-    //                   cells[destination][y].celltype = CellType::FutureFish;
-    //                   cells[x][y].celltype = CellType::PastFish;
-    //                 }
-    //                 break;
-    //             } 
-    //             case Direction::South: {
-    //                 int destination = ((y + 1)) % ydim;
-    //                 bool isNotBlocked = cells[x][destination].celltype == CellType::Ocean; 
-    //                 if(isNotBlocked) {
-    //                   cells[x][destination].celltype = CellType::FutureFish;
-    //                   cells[x][y].celltype = CellType::PastFish;
-    //                 }
-    //                 break;
-    //             }
-    //             case Direction::West: {
-    //                 int destination = ((x - 1) + xdim) % xdim;
-    //                 bool isNotBlocked = cells[destination][y].celltype == CellType::Ocean; 
-    //                 if(isNotBlocked) {
-    //                   cells[destination][y].celltype = CellType::FutureFish;
-    //                   cells[x][y].celltype = CellType::PastFish;
-    //                 }
-    //                 break;
-    //             }
-    //         }
-    //           --options;
-    //           // Move to the next direction, wrap if near boundaries with options left
-    //           printf("\nDirection: %d/n", direction);
-    //           direction = (direction + 1) % 4;
-    //         }
-    //         // if(cells[x][y].celltype == CellType::Fish) {
-    //         //   // If we're still a fish (ie have not moved, then set as future fish)
-    //         //   // ..this is unnecessary but useful for debugging new fish
-    //         //   cells[x][y].celltype = CellType::FutureFish;
-    //         // }
-    //       }
-    //     }
-    // //   }
+      for(int y = 0; y < ydim; ++y) {
+        for(int x = 0; x < xdim; ++x) {
+          //if(cells[x][y].celltype != CellType::Fish) { continue; }
+          int direction = rand() % 4;
+          int options = 4;
+          while((cells[x][y].celltype == CellType::Fish) && (options > 0)) {
+            switch(direction) {
+              case Direction::North: {
+                  moveFishVertically(UP, true);
+                  break;
+                }  
+                case Direction::East: {
+                  moveFishHorizontally(RIGHT, true);
+                  break;
+                } 
+                case Direction::South: {
+                  moveFishVertically(DOWN, true);
+                  break;
+                }
+                case Direction::West: {
+                  moveFishHorizontally(LEFT, true);
+                  break;
+                }
+            }
+              --options;
+              // Move to the next direction, wrap if near boundaries with options left
+              printf("\nDirection: %d/n", direction);
+              direction = (direction + 1) % 4;
+            }
+            printf("----\n");
+            if(cells[x][y].celltype == CellType::Fish) {
+              // If we're still a fish (ie have not moved, then set as future fish)
+              // ..this is unnecessary but useful for debugging new fish
+              cells[x][y].celltype = CellType::FutureFish;
+            }
+          }
+        }
+    //   }
     // }
+  
 
       // MoveSharksLeft + EatFish
       // -- We can't just move everything in a direction at once in this case
