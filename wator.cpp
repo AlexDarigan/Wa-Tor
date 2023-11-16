@@ -23,9 +23,16 @@
 // 
 // Code:
 
+#include <chrono>
 #include <SFML/Graphics.hpp>
 #include <cstdlib> 
+#include <iostream>
 
+
+
+auto start = std::chrono::high_resolution_clock::now();
+auto end = std::chrono::high_resolution_clock::now();
+auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 // Defining structs because we need more information (like "moved this round")
 
 enum Direction { North = 0, East = 1, South = 2, West = 3 };
@@ -36,7 +43,7 @@ struct Cell {
 };
 
 // Constants required by following arrays
-const int DIMENSIONS = 10; // Shape is a square so x and y arrays are the same dimensions
+const int DIMENSIONS = 100; // Shape is a square so x and y arrays are the same dimensions
 const int UP = -1;
 const int DOWN = 1;
 const int RIGHT = 1;
@@ -107,7 +114,6 @@ void moveLazyFish() {
           // Move to the next direction, wrap if near boundaries with options left
           direction = (direction + 1) % 4;
         }
-        printf("----\n");
         if(cells[x][y].celltype == CellType::Fish) {
           // If we're still a fish (ie have not moved, then set as future fish)
           // ..this is unnecessary but useful for debugging new fish
@@ -204,12 +210,18 @@ int main()
                 window.close();
         }
   
+      auto start = std::chrono::steady_clock::now();
       moveFish(RIGHT, STANDSTILL);
       moveFish(LEFT, STANDSTILL);
       moveFish(STANDSTILL, UP);
       moveFish(STANDSTILL, DOWN);
       moveLazyFish();
-
+      auto end = std::chrono::steady_clock::now();
+      auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+      std::cout << "Duration: " << duration << std::endl;
+      printf("Hello");
+      // printf("Duration:");
+      // printf(duration);
 
       // MoveSharksLeft + EatFish
       // -- We can't just move everything in a direction at once in this case
