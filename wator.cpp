@@ -44,7 +44,7 @@ struct Cell {
 };
 
 // Constants required by following arrays
-const int DIMENSIONS = 200; // Shape is a square so x and y arrays are the same dimensions
+const int DIMENSIONS = 600; // Shape is a square so x and y arrays are the same dimensions
 const int UP = -1;
 const int DOWN = 1;
 const int RIGHT = 1;
@@ -227,7 +227,7 @@ int main()
   srand(0);
  
   initialize();
-  omp_set_num_threads(1);
+  omp_set_num_threads(6);
   while (window.isOpen())
   {
       poll();
@@ -236,14 +236,12 @@ int main()
       // move fish left
       #pragma omp parallel for
       for(int y = 0; y < DIMENSIONS; ++y) {
-
-        #pragma omp parallel for
         for(int x = 0; x < DIMENSIONS; ++x) {
           int xDestination = (x + 1) % DIMENSIONS;
-          //if(willMove(x, y, xDestination, y, OVERRIDING_FREEWILL)) {
-          future[xDestination][y] = cells[x][y];
-          //}
+          if(willMove(x, y, xDestination, y, OVERRIDING_FREEWILL)) {
+            future[xDestination][y] = cells[x][y];
           }
+        }
       }
 
     auto end = std::chrono::steady_clock::now();
