@@ -27,6 +27,7 @@
 #include <SFML/Graphics.hpp>
 #include <cstdlib> 
 #include <iostream>
+#include <omp.h>
 
 
 
@@ -36,14 +37,14 @@ auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - star
 // Defining structs because we need more information (like "moved this round")
 
 enum Direction { North = 0, East = 1, South = 2, West = 3 };
-enum CellType { Ocean, Fish, PastFish, FutureFish, Shark, PastShark, FutureShark };
+enum CellType { Ocean, Fish, Shark };
 
 struct Cell {
   CellType celltype = Ocean;
 };
 
 // Constants required by following arrays
-const int DIMENSIONS = 100; // Shape is a square so x and y arrays are the same dimensions
+const int DIMENSIONS = 200; // Shape is a square so x and y arrays are the same dimensions
 const int UP = -1;
 const int DOWN = 1;
 const int RIGHT = 1;
@@ -53,8 +54,8 @@ const bool OVERRIDING_FREEWILL = true;
 
 // Allocating arrays on the heap by moving them to the global scope
 sf::RectangleShape recArray[DIMENSIONS][DIMENSIONS];
-sf::RectangleShape recArray2[DIMENSIONS][DIMENSIONS]; // Removing this causes segfault for some reason
 Cell cells[DIMENSIONS][DIMENSIONS];
+Cell future[DIMENSIONS][DIMENSIONS];
 
 bool willMove(int x, int y, int destX, int destY, bool overrideFreeWill) {
   return (
@@ -76,8 +77,8 @@ void moveFish(int xDirection, int yDirection, bool overrideFreeWill = false) {
       int xDestination = getNextMove(x, xDirection);
       int yDestination = getNextMove(y, yDirection);
       if(willMove(x, y, xDestination, yDestination, overrideFreeWill)) {
-        cells[xDestination][yDestination].celltype = CellType::FutureFish;
-        cells[x][y].celltype = CellType::PastFish;
+        //cells[xDestination][yDestination].celltype = CellType::FutureFish;
+        //cells[x][y].celltype = CellType::PastFish;
       }
     }
   }
@@ -117,39 +118,12 @@ void moveLazyFish() {
         if(cells[x][y].celltype == CellType::Fish) {
           // If we're still a fish (ie have not moved, then set as future fish)
           // ..this is unnecessary but useful for debugging new fish
-          cells[x][y].celltype = CellType::FutureFish;
+         // cells[x][y].celltype = CellType::FutureFish;
         }
       }
     }
 }
 
-void applyMovement() {
-  for(int y = 0; y < DIMENSIONS; ++y) {
-    for(int x = 0; x < DIMENSIONS; ++x) {
-      switch(cells[x][y].celltype) {
-        case CellType::Ocean: {
-          recArray[x][y].setFillColor(sf::Color::Blue);
-          break;
-        }
-        case CellType::Fish: {
-          recArray[x][y].setFillColor(sf::Color::Green);
-          // No Cells should be fish unless surrounded
-          break;
-        }
-        case CellType::PastFish: {
-          recArray[x][y].setFillColor(sf::Color::Blue);
-          cells[x][y].celltype = CellType::Ocean;
-          break;
-        }
-        case CellType::FutureFish: {
-          recArray[x][y].setFillColor(sf::Color::Green);
-          cells[x][y].celltype = CellType::Fish;
-          break;
-        }
-      }
-    }
-  }
-}
 
 void countFish() {
     // Not working properly, too many fishes
@@ -164,29 +138,78 @@ void countFish() {
     printf("Fishes: %d\n", fishes);
   }
 
+void copyFuture() {
+// Applying future to current
+  for(int y = 0; y < DIMENSIONS; ++y) {
+    for(int x = 0; x < DIMENSIONS; ++x) {
+      cells[x][y] = future[x][y];
+      future[x][y].celltype = CellType::Ocean;
+    }
+  }
+}
 
-int main()
-{
-  srand(0);
-  int WindowXSize=800;
-  int WindowYSize=600;
-  int cellXSize=WindowXSize/DIMENSIONS;
-  int cellYSize=WindowYSize/DIMENSIONS;
 
+const int WindowXSize=800;
+const int WindowYSize=600;
+const int cellXSize=WindowXSize/DIMENSIONS;
+const int cellYSize=WindowYSize/DIMENSIONS;
+sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
+
+void draw() {
+   window.clear(sf::Color::Black);
+    for(int i=0;i<DIMENSIONS;++i){
+      for(int k=0;k<DIMENSIONS;++k){
+        window.draw(recArray[i][k]);
+      }
+    }
+      sf::sleep(sf::seconds(1));
+      window.display();
+}
+
+void setColors() {
+  for(int y = 0; y < DIMENSIONS; ++y) {
+    for(int x = 0; x < DIMENSIONS; ++x) {
+      switch(cells[x][y].celltype) {
+        case CellType::Ocean:
+          recArray[x][y].setFillColor(sf::Color::Blue);
+          break;
+        case CellType::Fish:
+          recArray[x][y].setFillColor(sf::Color::Green);
+          break;
+        case CellType::Shark:
+          recArray[x][y].setFillColor(sf::Color::Red);
+          break;
+        default:
+          break;
+        
+      }
+    }
+  }
+}
+
+void poll() {
+  sf::Event event;
+      while (window.pollEvent(event))
+      {
+          if (event.type == sf::Event::Closed)
+              window.close();
+      }
+}
+
+void initialize() {
   for(int i=0;i<DIMENSIONS;++i){
-    recArray[DIMENSIONS][DIMENSIONS].setFillColor(sf::Color::Blue);
-    for(int k=0;k<DIMENSIONS;++k){//give each one a size, position and color
-      // recArray2[i][k].setFillColor(sf::Color::Blue);
-      recArray[i][k].setSize(sf::Vector2f(80.f,80.f));
-      recArray[i][k].setPosition(i*cellXSize,k*cellYSize);//position is top left corner!
+    for(int k=0;k<DIMENSIONS;++k){
+      recArray[i][k].setSize(sf::Vector2f(cellXSize,cellYSize));
+      recArray[i][k].setPosition(i*cellXSize,k*cellYSize);
       int id=i*1-+k;
       //if(false)
-      if(id%10==0) {
-        recArray[i][k].setFillColor(sf::Color::Red);
-        cells[i][k].celltype = CellType::Shark;
-      }
-      else if (id%2==0) { 
-      //if(i == 3 && k == 0) {  
+      // if(id%10==0) {
+      //   recArray[i][k].setFillColor(sf::Color::Red);
+      //   cells[i][k].celltype = CellType::Shark;
+      // }
+      //else 
+      if (id%2==0) { 
+      // if(i == 3 && k == 0) {  
         recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Fish;
       }
@@ -196,63 +219,43 @@ int main()
       }
     }
   }
+}
 
-    sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
-   
 
-    while (window.isOpen())
-    {
+int main()
+{
+  srand(0);
  
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-                window.close();
-        }
-  
+  initialize();
+  omp_set_num_threads(1);
+  while (window.isOpen())
+  {
+      poll();
       auto start = std::chrono::steady_clock::now();
-      moveFish(RIGHT, STANDSTILL);
-      moveFish(LEFT, STANDSTILL);
-      moveFish(STANDSTILL, UP);
-      moveFish(STANDSTILL, DOWN);
-      moveLazyFish();
-      auto end = std::chrono::steady_clock::now();
-      auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-      std::cout << "Duration: " << duration << std::endl;
-      printf("Hello");
-      // printf("Duration:");
-      // printf(duration);
 
-      // MoveSharksLeft + EatFish
-      // -- We can't just move everything in a direction at once in this case
-      // -- We need to get decisions per direction, then act on those directions
-      // -- We could check all fish to the left, then decided if the shark wants to eat them
-      // -- but maybe it decides no, but also there is no other fish
-      // ..alternatively, we could make a decision and then seperate them into four lists of eat direction
-      // ..
-      // MoveSharksRight + EatFish
-      // MoveSharksUp + EatFish
-      // MoveSharksDown + EatFish
-      applyMovement();
-      countFish();
+      // move fish left
+      #pragma omp parallel for
+      for(int y = 0; y < DIMENSIONS; ++y) {
 
-   
-
-
-    // Draw Window
-    window.clear(sf::Color::Black);
-    for(int i=0;i<DIMENSIONS;++i){
-      for(int k=0;k<DIMENSIONS;++k){
-        window.draw(recArray[i][k]);
+        #pragma omp parallel for
+        for(int x = 0; x < DIMENSIONS; ++x) {
+          int xDestination = (x + 1) % DIMENSIONS;
+          //if(willMove(x, y, xDestination, y, OVERRIDING_FREEWILL)) {
+          future[xDestination][y] = cells[x][y];
+          //}
+          }
       }
-    }
-      sf::sleep(sf::seconds(1));
-      window.display();
-      
+
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    printf("Duration: %ld\n", duration);
+
+    copyFuture();
+    setColors();
+    countFish();
+    draw();
   }
     
     return 0;
 }
-
-// 
 // wator.cpp ends here

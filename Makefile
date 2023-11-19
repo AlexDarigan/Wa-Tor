@@ -1,9 +1,9 @@
 # Author: David Darigan
 
-CXX = g++
+CXX = g++ -fopenmp
 CPPFILES= wator.cpp
 CPPFLAGS= -Wall
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lgomp
+LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system -lgomp -fopenmp
 EXE= watorApp
 
 SRCS=wator.cpp
