@@ -29,13 +29,13 @@
 #include <iostream>
 #include <omp.h>
 
-const int ROWS = 10;
-const int COLUMNS = 10;
+const int ROWS = 80;
+const int COLUMNS = 80;
 const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
 const int FISH_BREED = 1;
 const int SHARK_BREED = 6;
-const int SHARK_STARVE = 3;
+const int SHARK_STARVE = 2;
 const int NUM_THREADS = 1;
 const int SHARK_ENERGY_GAIN = 1;
 const int WindowXSize = 800;
@@ -206,7 +206,6 @@ void setCell(int x, int y, Cell cell) {
 }
 
 void countFish() {
-    // Not working properly, too many fishes
     int fishes = 0;
     int shark = 0;
     for(int y = 0; y < ROWS; ++y) {
