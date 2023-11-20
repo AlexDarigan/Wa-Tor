@@ -230,7 +230,7 @@ int main()
         }
       }
     }
-  //}
+  
 
     for(int y = 0; y < DIMENSIONS; ++y) {
       for(int x = 0; x < DIMENSIONS; ++x) {
@@ -238,53 +238,8 @@ int main()
       }
     }
 
-
-        // bool hasMoved = false;
-        // int direction = rand() % 4;
-        // for(int i = 0; i < 4; ++i) {
-        //   switch (direction)
-        //   {
-        //     case North:
-        //       if(cells[x][y + 1].isOcean()) {
-        //         cells[x][(y + 1) % DIMENSIONS] = cells[x][y];
-        //         cells[x][(y + 1) % DIMENSIONS].hasMoved = true;
-        //         cells[x][y].celltype = CellType::Ocean;
-        //         hasMoved = true;
-        //       }
-        //       break;
-        //     case East:
-        //       if(cells[(x + 1) % DIMENSIONS][y].isOcean()) {
-        //         cells[(x + 1) % DIMENSIONS][y] = cells[x][y];
-        //         cells[(x + 1) % DIMENSIONS][y].hasMoved = true;
-        //         cells[x][y].celltype = CellType::Ocean;
-        //         hasMoved = true;
-        //       }
-        //       break;
-        //     case South:
-        //       if(cells[x][(y - 1 + DIMENSIONS) % DIMENSIONS].isOcean()) {
-        //         cells[x][(y - 1 + DIMENSIONS) % DIMENSIONS] = cells[x][y];
-        //         cells[x][(y - 1 + DIMENSIONS) % DIMENSIONS].hasMoved = true;
-        //         cells[x][y].celltype = CellType::Ocean;
-        //         hasMoved = true;
-        //       }
-        //       break;
-        //     case West:
-        //       if(cells[(x - 1 + DIMENSIONS) % DIMENSIONS][y].isOcean()) {
-        //         cells[(x - 1 + DIMENSIONS) % DIMENSIONS][y] = cells[x][y];
-        //         cells[(x - 1 + DIMENSIONS) % DIMENSIONS][y].hasMoved = true;
-        //         cells[x][y].celltype = CellType::Ocean;
-        //         hasMoved = true;
-        //       }
-        //       break;
-        //   }
-        //   direction = (direction + 1) % 4;
-        //   if(hasMoved) { continue; }
-        // }
-    //   }
-    // }
-
     setColors();
-    //countFish();
+    countFish();
     draw();
   }
     
