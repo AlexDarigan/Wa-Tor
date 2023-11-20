@@ -29,66 +29,56 @@
 #include <iostream>
 #include <omp.h>
 
-// TODO
-// 1 - Add Shark Move
-// 2 - Parallelize
-// 3 - Critical Sections
-// Note: Each iteration of omp for loop is sequential internally
-
+const int ROWS = 10;
+const int COLUMNS = 10;
+const int NUM_FISH = -1;
+const int NUM_SHARK = -1;
+const int FISH_BREED = 3;
+const int SHARK_BREED = 3;
+const int SHARK_STARVE = 3;
+const int NUM_THREADS = 1;
+const int WindowXSize = 800;
+const int WindowYSize = 600;
+const int cellXSize = WindowXSize / ROWS;
+const int cellYSize = WindowYSize / COLUMNS;
 enum Direction { North = 0, East = 1, South = 2, West = 3 };
 enum CellType { Ocean, Fish, Shark };
 
 struct Cell {
   CellType celltype = CellType::Ocean;
   bool hasMoved = false;
-  int birthRate = 3;
-  int starvation = 3;
-  int energy = 0;
+  int energy = SHARK_STARVE;
   int turn = 0;
 
   bool isOcean() { return celltype == CellType::Ocean; };
   bool isFish() { return celltype == CellType::Fish; };
   bool isShark() { return celltype == CellType::Shark; };
 
-  bool toFish() {
+  void toFish() {
     celltype = CellType::Fish;
     turn = 0;
     hasMoved = false;
   }
 
-  bool toShark() {
+  void toShark() {
     celltype = CellType::Shark;
     energy = 0;
     turn = 0;
     hasMoved = false;
   }
-
-  bool breed(int x, int y) {
-
-  }
-  
-
 };
 
-// Constants required by following arrays
-const int DIMENSIONS = 10;  // (600 max) Shape is a square so x and y arrays are the same dimensions
-const int UP = -1;
-const int DOWN = 1;
-const int RIGHT = 1;
-const int LEFT = -1;
-const int STANDSTILL = 0;
-const bool OVERRIDING_FREEWILL = true;
+sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
+sf::RectangleShape display[ROWS][COLUMNS];
+Cell cells[ROWS][COLUMNS];
 
-// Allocating arrays on the heap by moving them to the global scope
-sf::RectangleShape recArray[DIMENSIONS][DIMENSIONS];
-Cell cells[DIMENSIONS][DIMENSIONS];
 
 void countFish() {
     // Not working properly, too many fishes
     int fishes = 0;
     int shark = 0;
-    for(int y = 0; y < DIMENSIONS; ++y) {
-      for(int x = 0; x < DIMENSIONS; ++x) {
+    for(int y = 0; y < ROWS; ++y) {
+      for(int x = 0; x < COLUMNS; ++x) {
         if(cells[x][y].celltype == CellType::Fish) {
           fishes++;
         } else if(cells[x][y].celltype == CellType::Shark) {
@@ -99,17 +89,12 @@ void countFish() {
     printf("Fishes: %d\nSharks: %d\n", fishes, shark);
   }
 
-const int WindowXSize=800;
-const int WindowYSize=600;
-const int cellXSize=WindowXSize/DIMENSIONS;
-const int cellYSize=WindowYSize/DIMENSIONS;
-sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
 
 void draw() {
    window.clear(sf::Color::Black);
-    for(int i=0;i<DIMENSIONS;++i){
-      for(int k=0;k<DIMENSIONS;++k){
-        window.draw(recArray[i][k]);
+    for(int i=0;i<ROWS;++i){
+      for(int k=0;k<COLUMNS;++k){
+        window.draw(display[i][k]);
       }
     }
       sf::sleep(sf::seconds(2));
@@ -117,17 +102,17 @@ void draw() {
 }
 
 void setColors() {
-  for(int y = 0; y < DIMENSIONS; ++y) {
-    for(int x = 0; x < DIMENSIONS; ++x) {
+  for(int y = 0; y < ROWS; ++y) {
+    for(int x = 0; x < COLUMNS; ++x) {
       switch(cells[x][y].celltype) {
         case CellType::Ocean:
-          recArray[x][y].setFillColor(sf::Color::Blue);
+          display[x][y].setFillColor(sf::Color::Blue);
           break;
         case CellType::Fish:
-          recArray[x][y].setFillColor(sf::Color::Green);
+          display[x][y].setFillColor(sf::Color::Green);
           break;
         case CellType::Shark:
-          recArray[x][y].setFillColor(sf::Color::Red);
+          display[x][y].setFillColor(sf::Color::Red);
           break;
         default:
           break;
@@ -147,24 +132,24 @@ void poll() {
 }
 
 void initialize() {
-  for(int i=0;i<DIMENSIONS;++i){
-    for(int k=0;k<DIMENSIONS;++k){
-      recArray[i][k].setSize(sf::Vector2f(cellXSize,cellYSize));
-      recArray[i][k].setPosition(i*cellXSize,k*cellYSize);
+  for(int i=0;i<ROWS;++i){
+    for(int k=0;k<COLUMNS;++k){
+      display[i][k].setSize(sf::Vector2f(cellXSize,cellYSize));
+      display[i][k].setPosition(i*cellXSize,k*cellYSize);
       int id=i*1-+k;
       //if(false)
-      //if(id%5==0) {
-      if(i == 7 && k == 7) {
-        recArray[i][k].setFillColor(sf::Color::Red);
+      if(id%6==0) {
+     // if(i == 7 && k == 7) {
+        //display[i][k].setFillColor(sf::Color::Red);
         cells[i][k].celltype = CellType::Shark;
       }
-      //else if (id%2==0) { 
-      else if(i == 5 && k == 6) {  
-        recArray[i][k].setFillColor(sf::Color::Green);
+      else if (id%2==0) { 
+      //else if(i == 5 && k == 6) {  
+        //display[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Fish;
       }
       else {
-        recArray[i][k].setFillColor(sf::Color::Green);
+        //display[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Ocean;
       }
     }
@@ -176,7 +161,7 @@ bool moveFish(int x, int y, int x2, int y2) {
     cells[x][y].turn++;
     cells[x2][y2] = cells[x][y];
     cells[x2][y2].hasMoved = true;
-    if(cells[x2][y2].turn == cells[x2][y2].birthRate) {
+    if(cells[x2][y2].turn == FISH_BREED) {
       cells[x][y].toFish();
       cells[x2][y2].turn = 0;
     } else {
@@ -187,13 +172,13 @@ bool moveFish(int x, int y, int x2, int y2) {
   return false;
 }
 
-bool moveShark(int x, int y, int x2, int y2) {
+bool moveShark(int x, int y, int x2, int y2, bool justMove = false) {
   if(cells[x2][y2].isFish()) {
     cells[x2][y2] = cells[x][y];
     cells[x2][y2].hasMoved = true;
     cells[x2][y2].energy--;
     cells[x][y].celltype = CellType::Ocean;
-    if(cells[x2][y2].turn == cells[x2][y2].birthRate) {
+    if(cells[x2][y2].turn == SHARK_BREED) {
       cells[x][y].toShark();
       cells[x2][y2].turn = 0;
     } else {
@@ -206,8 +191,8 @@ bool moveShark(int x, int y, int x2, int y2) {
 
 
 void count() {
-  for(int i=0;i<DIMENSIONS;++i) {
-    for(int k=0;k<DIMENSIONS;++k){
+  for(int i=0;i<ROWS;++i) {
+    for(int k=0;k<COLUMNS;++k){
       printf("%d\n", cells[i][k].celltype);
     }
   }
@@ -216,16 +201,18 @@ void count() {
 int main()
 {
   srand(0);
+  omp_set_num_threads(NUM_THREADS);
   initialize();
+  setColors();
   draw();
- // omp_set_num_threads(6);
   while (window.isOpen())
   {
     poll();
 
+    
     // Move Fish
-    for(int y = 0; y < DIMENSIONS; ++y) {
-      for(int x = 0; x < DIMENSIONS; ++x) {
+    for(int y = 0; y < ROWS; ++y) {
+      for(int x = 0; x < COLUMNS; ++x) {
         if(cells[x][y].isFish() && !cells[x][y].hasMoved) {
         bool hasMoved = false;
         int direction = rand() % 4;
@@ -233,22 +220,22 @@ int main()
           switch (direction)
           {
             case North: {
-              int north = (y - 1 + DIMENSIONS) % DIMENSIONS;
+              int north = (y - 1 + ROWS) % ROWS;
               hasMoved = moveFish(x, y, x, north);
             }
               break;
             case East: {
-              int east = (x + 1) % DIMENSIONS;
+              int east = (x + 1) % COLUMNS;
               hasMoved = moveFish(x, y, east, y);
             }
               break;
             case South: {
-              int south = (y + 1) % DIMENSIONS;
+              int south = (y + 1) % ROWS;
               hasMoved = moveFish(x, y, x, south);
             }
               break;
             case West: {
-              int west = (x - 1 + DIMENSIONS) % DIMENSIONS;
+              int west = (x - 1 + COLUMNS) % COLUMNS;
               hasMoved = moveFish(x, y, west, y);
             }
               break;
@@ -263,8 +250,8 @@ int main()
   }
 
     // Move Shark
-    for(int y = 0; y < DIMENSIONS; ++y) {
-      for(int x = 0; x < DIMENSIONS; ++x) {
+    for(int y = 0; y < ROWS; ++y) {
+      for(int x = 0; x < COLUMNS; ++x) {
         if(cells[x][y].isShark() && !cells[x][y].hasMoved) {
           bool hasMoved = false;
           int lookDirection = rand() % 4;
@@ -272,22 +259,22 @@ int main()
           for(int i = 0; i < 4; ++i) {
             switch (lookDirection) {
               case North: {
-                  int north = (y - 1 + DIMENSIONS) % DIMENSIONS;
+                  int north = (y - 1 + ROWS) % ROWS;
                   hasMoved = moveShark(x, y, x, north);
                 }
                 break;
               case East: {
-                  int east = (x + 1) % DIMENSIONS;
+                  int east = (x + 1) % COLUMNS;
                   hasMoved = moveShark(x, y, east, y);
                 }
                 break;
               case South: {
-                  int south = (y + 1) % DIMENSIONS;
+                  int south = (y + 1) % ROWS;
                   hasMoved = moveShark(x, y, x, south);                
                 }
                 break;
               case West: {
-                int west = (x - 1 + DIMENSIONS) % DIMENSIONS;
+                int west = (x - 1 + COLUMNS) % COLUMNS;
                 hasMoved = moveShark(x, y, west, y);
                 }
                 break;
@@ -299,15 +286,15 @@ int main()
               break; 
             }
           }
-          if(cells[x][y].isShark() && cells[x][y].energy == cells[x][y].starvation) {
+          if(cells[x][y].isShark() && cells[x][y].energy == SHARK_STARVE) {
             cells[x][y].celltype = Ocean;
           }
       }
     }
   }
 
-    for(int y = 0; y < DIMENSIONS; ++y) {
-      for(int x = 0; x < DIMENSIONS; ++x) {
+    for(int y = 0; y < ROWS; ++y) {
+      for(int x = 0; x < COLUMNS; ++x) {
         cells[x][y].hasMoved = false;
       }
     }
