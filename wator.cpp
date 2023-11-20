@@ -36,12 +36,18 @@ enum Direction { North = 0, East = 1, South = 2, West = 3 };
 enum CellType { Ocean, Fish, Shark };
 
 struct Cell {
-  CellType celltype = Ocean;
+  CellType celltype = CellType::Ocean;
   bool hasMoved = false;
+
+  bool isOcean() { return celltype == CellType::Ocean; };
+  bool isFish() { return celltype == CellType::Fish; };
+  bool isShark() { return celltype == CellType::Shark; };
+ // void setCellType(CellType _celltype) { celltype = _celltype; };
+
 };
 
 // Constants required by following arrays
-const int DIMENSIONS = 600;  // (600 max) Shape is a square so x and y arrays are the same dimensions
+const int DIMENSIONS = 10;  // (600 max) Shape is a square so x and y arrays are the same dimensions
 const int UP = -1;
 const int DOWN = 1;
 const int RIGHT = 1;
@@ -126,13 +132,13 @@ void initialize() {
       //   cells[i][k].celltype = CellType::Shark;
       // }
       //else 
-      if (id%2==0) { 
-      //if(i == 5 && k == 0) {  
+      //if (id%2==0) { 
+      if(i == 5 && k == 6) {  
         recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Fish;
       }
       else {
-        recArray[i][k].setFillColor(sf::Color::Blue);
+        recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Ocean;
       }
     }
@@ -140,49 +146,172 @@ void initialize() {
 }
 
 
-void moveFish() {
-  int direction = rand() % 4;
-  for(int i = 0; i < 4; ++i) {
-    switch (direction)
-    {
-      case North:
-        // check if ocean, move, mark moved
-        return;
-      case East:
-        // check if ocean, move, mark moved
-        return;
-      case South:
-        // check if ocean, move, mark moved
-        return;
-      case West:
-        // check if ocean, move, mark move
-        return;
+void count() {
+  for(int i=0;i<DIMENSIONS;++i) {
+    for(int k=0;k<DIMENSIONS;++k){
+      printf("%d\n", cells[i][k].celltype);
     }
   }
 }
-
-void moveShark() { }
 
 int main()
 {
   srand(0);
   initialize();
-  omp_set_num_threads(6);
+ // omp_set_num_threads(6);
   while (window.isOpen())
   {
     poll();
-    auto start = std::chrono::steady_clock::now();
-    moveFish();
-    moveShark();
-    auto end = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    printf("Duration: %ld\n", duration);
+
+    // Move Fish
+    for(int y = 0; y < DIMENSIONS; ++y) {
+      for(int x = 0; x < DIMENSIONS; ++x) {
+        if(cells[x][y].celltype == CellType::Fish && !cells[x][y].hasMoved) { // } && !cells[x][y].hasMoved) {
+          if(cells[(x + 1) % DIMENSIONS][y].celltype == CellType::Ocean) {
+            cells[(x + 1) % DIMENSIONS][y] = cells[x][y];
+            cells[(x + 1) % DIMENSIONS][y].hasMoved = true;
+            cells[x][y].celltype = CellType::Ocean;
+            //hasMoved = true;
+          }
+        }
+      }
+    }
+
+    for(int y = 0; y < DIMENSIONS; ++y) {
+      for(int x = 0; x < DIMENSIONS; ++x) {
+        cells[x][y].hasMoved = false;
+      }
+    }
+
+
+        // bool hasMoved = false;
+        // int direction = rand() % 4;
+        // for(int i = 0; i < 4; ++i) {
+        //   switch (direction)
+        //   {
+        //     case North:
+        //       if(cells[x][y + 1].isOcean()) {
+        //         cells[x][(y + 1) % DIMENSIONS] = cells[x][y];
+        //         cells[x][(y + 1) % DIMENSIONS].hasMoved = true;
+        //         cells[x][y].celltype = CellType::Ocean;
+        //         hasMoved = true;
+        //       }
+        //       break;
+        //     case East:
+        //       if(cells[(x + 1) % DIMENSIONS][y].isOcean()) {
+        //         cells[(x + 1) % DIMENSIONS][y] = cells[x][y];
+        //         cells[(x + 1) % DIMENSIONS][y].hasMoved = true;
+        //         cells[x][y].celltype = CellType::Ocean;
+        //         hasMoved = true;
+        //       }
+        //       break;
+        //     case South:
+        //       if(cells[x][(y - 1 + DIMENSIONS) % DIMENSIONS].isOcean()) {
+        //         cells[x][(y - 1 + DIMENSIONS) % DIMENSIONS] = cells[x][y];
+        //         cells[x][(y - 1 + DIMENSIONS) % DIMENSIONS].hasMoved = true;
+        //         cells[x][y].celltype = CellType::Ocean;
+        //         hasMoved = true;
+        //       }
+        //       break;
+        //     case West:
+        //       if(cells[(x - 1 + DIMENSIONS) % DIMENSIONS][y].isOcean()) {
+        //         cells[(x - 1 + DIMENSIONS) % DIMENSIONS][y] = cells[x][y];
+        //         cells[(x - 1 + DIMENSIONS) % DIMENSIONS][y].hasMoved = true;
+        //         cells[x][y].celltype = CellType::Ocean;
+        //         hasMoved = true;
+        //       }
+        //       break;
+        //   }
+        //   direction = (direction + 1) % 4;
+        //   if(hasMoved) { continue; }
+        // }
+    //   }
+    // }
 
     setColors();
-    countFish();
+    //countFish();
     draw();
   }
     
     return 0;
 }
+      
+    ///setColors();
+       
+
+    // for(int y = 0; y < DIMENSIONS; ++y) {
+    //   for(int x = 0; x < DIMENSIONS; ++x) {
+    //     switch(cells[x][y].celltype) {
+    //       case CellType::Ocean:
+    //         recArray[x][y].setFillColor(sf::Color::Blue);
+    //         break;
+    //       case CellType::Fish:
+    //         recArray[x][y].setFillColor(sf::Color::Green);
+    //         break;
+    //       case CellType::Shark:
+    //         recArray[x][y].setFillColor(sf::Color::Red);
+    //         break;
+    //       default:
+    //         break;
+          
+    //     }
+    //   }
+//   }
+// }
+
+
+//     auto end = std::chrono::steady_clock::now();
+//     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+//     setColors();
+//     countFish();
+//     draw();
+//   }
+    
+//     return 0;
+// }
 // wator.cpp ends here
+
+
+        //bool hasMoved = false;
+        // int direction = rand() % 4;
+        // for(int i = 0; i < 4; ++i) {
+        //   switch (direction)
+        //   {
+        //     case North:
+        //       if(cells[x][y + 1].isOcean()) {
+        //         cells[x][(y + 1) % DIMENSIONS] = cells[x][y];
+        //         cells[x][(y + 1) % DIMENSIONS].hasMoved = true;
+        //         cells[x][y].celltype = CellType::Ocean;
+        //         hasMoved = true;
+        //       }
+        //       break;
+        //     case East:
+        //       if(cells[(x + 1) % DIMENSIONS][y].isOcean()) {
+        //         cells[(x + 1) % DIMENSIONS][y] = cells[x][y];
+        //         cells[(x + 1) % DIMENSIONS][y].hasMoved = true;
+        //         cells[x][y].celltype = CellType::Ocean;
+        //         hasMoved = true;
+        //       }
+        //       break;
+        //     case South:
+        //       if(cells[x][(y - 1 + DIMENSIONS) % DIMENSIONS].isOcean()) {
+        //         cells[x][(y - 1 + DIMENSIONS) % DIMENSIONS] = cells[x][y];
+        //         cells[x][(y - 1 + DIMENSIONS) % DIMENSIONS].hasMoved = true;
+        //         cells[x][y].celltype = CellType::Ocean;
+        //         hasMoved = true;
+        //       }
+        //       break;
+        //     case West:
+        //       if(cells[(x - 1 + DIMENSIONS) % DIMENSIONS][y].isOcean()) {
+        //         cells[(x - 1 + DIMENSIONS) % DIMENSIONS][y] = cells[x][y];
+        //         cells[(x - 1 + DIMENSIONS) % DIMENSIONS][y].hasMoved = true;
+        //         cells[x][y].celltype = CellType::Ocean;
+        //         hasMoved = true;
+        //       }
+        //       break;
+        //   }
+        //   direction = (direction + 1) % 4;
+        //   if(hasMoved) { continue; }
+    //     }
+    //   }
+    // }
