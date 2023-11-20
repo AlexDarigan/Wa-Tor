@@ -38,13 +38,14 @@ enum CellType { Ocean, Fish, Shark };
 struct Cell {
   CellType celltype = CellType::Ocean;
   bool hasMoved = false;
-  bool birthRate = 3;
-  bool turn = 0;
+  int birthRate = 3;
+  int starvation = 3;
+  int turn = 0;
 
   bool isOcean() { return celltype == CellType::Ocean; };
   bool isFish() { return celltype == CellType::Fish; };
   bool isShark() { return celltype == CellType::Shark; };
- // void setCellType(CellType _celltype) { celltype = _celltype; };
+  
 
 };
 
@@ -64,15 +65,17 @@ Cell cells[DIMENSIONS][DIMENSIONS];
 void countFish() {
     // Not working properly, too many fishes
     int fishes = 0;
+    int shark = 0;
     for(int y = 0; y < DIMENSIONS; ++y) {
       for(int x = 0; x < DIMENSIONS; ++x) {
         if(cells[x][y].celltype == CellType::Fish) {
           fishes++;
-         // printf("Fish: (%d, %d)\n", x, y);
+        } else if(cells[x][y].celltype == CellType::Shark) {
+          shark++;
         }
       }
     }
-    printf("Fishes: %d\n", fishes);
+    printf("Fishes: %d\nSharks: %d\n", fishes, shark);
   }
 
 const int WindowXSize=800;
@@ -231,6 +234,7 @@ int main()
         if(cells[x][y].isShark() && !cells[x][y].hasMoved) {
           bool hasMoved = false;
           int lookDirection = rand() % 4;
+          cells[x][y].turn++;
           for(int i = 0; i < 4; ++i) {
             switch (lookDirection) {
               case North: {
@@ -238,6 +242,7 @@ int main()
                   if(cells[x][north].isFish()) {
                     cells[x][north] = cells[x][y];
                     cells[x][north].hasMoved = true;
+                    cells[x][north].turn--;
                     cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
@@ -248,6 +253,7 @@ int main()
                   if(cells[east][y].isFish()) {
                     cells[east][y] = cells[x][y];
                     cells[east][y].hasMoved = true;
+                    cells[east][y].turn--;
                     cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
@@ -258,6 +264,7 @@ int main()
                   if(cells[x][south].isFish()) {
                     cells[x][south] = cells[x][y];
                     cells[x][south].hasMoved = true;
+                    cells[x][south].turn--;
                     cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
@@ -268,6 +275,7 @@ int main()
                   if(cells[west][y].isFish()) {
                     cells[west][y] = cells[x][y];
                     cells[west][y].hasMoved = true;
+                    cells[west][y].turn--;
                     cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
@@ -277,8 +285,13 @@ int main()
                 break;
             }
             lookDirection = (lookDirection + 1) % 4;
-            if(hasMoved) { break; }
-        }
+            if(hasMoved) { 
+              break; 
+            }
+          }
+          if(cells[x][y].isShark() && cells[x][y].turn == cells[x][y].starvation) {
+            cells[x][y].celltype = Ocean;
+          }
       }
     }
   }
