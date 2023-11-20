@@ -162,7 +162,7 @@ void draw() {
         window.draw(recArray[i][k]);
       }
     }
-      sf::sleep(sf::seconds(1));
+      sf::sleep(sf::seconds(2));
       window.display();
 }
 
@@ -209,7 +209,7 @@ void initialize() {
       // }
       //else 
       if (id%2==0) { 
-      // if(i == 3 && k == 0) {  
+      //if(i == 8 && k == 7) {  
         recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Fish;
       }
@@ -233,13 +233,21 @@ int main()
       poll();
       auto start = std::chrono::steady_clock::now();
 
+      #pragma omp parallel
+      {
       // move fish left
-      #pragma omp parallel for
-      for(int y = 0; y < DIMENSIONS; ++y) {
-        for(int x = 0; x < DIMENSIONS; ++x) {
-          int xDestination = (x + 1) % DIMENSIONS;
-          if(willMove(x, y, xDestination, y, OVERRIDING_FREEWILL)) {
-            future[xDestination][y] = cells[x][y];
+        #pragma omp for collapse(2)
+        for(int y = 0; y < DIMENSIONS; ++y) {
+          for(int x = 0; x < DIMENSIONS; ++x) {
+            int xDestination = getNextMove(x, RIGHT);
+            int yDestination =  getNextMove(y, STANDSTILL);
+            if(willMove(x, y, xDestination, yDestination, false)) {
+              future[xDestination][yDestination] = cells[x][y];
+            } else {
+              if(cells[x][y].celltype == CellType::Fish) {
+                future[x][y] = cells[x][y];
+              }
+            }
           }
         }
       }
