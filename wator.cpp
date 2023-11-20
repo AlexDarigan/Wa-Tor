@@ -79,18 +79,18 @@ struct Cell {
       for(int i = 0; i < 4; i++) {
         int x2 = neighbours[location].getX();
         int y2 = neighbours[location].getY();
-        printf("x, y, x2, y2 -> %d, %d, %d, %d\n", x, y, x2, y2);
         if(getCell(x2, y2).isOcean()) {
-          turn++;
+          turn = turn + 1;
           hasMoved = true;
-          setCell(x2, y2, *this);
           Cell prev;
+          prev = prev.toOcean();
           if(turn == FISH_BREED) {
             turn = 0;
-            setCell(x,y, prev.toFish());
-          } else {
-            setCell(x,y, prev.toOcean());
+            prev = prev.toFish();
           }
+          setCell(x2, y2, *this);
+          setCell(x, y, prev);
+          break;
         }
        if(!hasMoved) { location = (location + 1) % 4; }
      }
@@ -197,8 +197,8 @@ void initialize() {
         Cell c;
         setCell(i, k, c.toShark());
       }
-      else if (id%2==0) { 
-      //else if(i == 5 && k == 6) {  
+      //else if (id%2==0) { 
+      else if(i == 5 && k == 6) {  
         Cell c;
         setCell(i,k, c.toFish());
       }
