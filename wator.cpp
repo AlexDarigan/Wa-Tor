@@ -33,11 +33,11 @@ const int ROWS = 10;
 const int COLUMNS = 10;
 const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
-const int FISH_BREED = 3;
-const int SHARK_BREED = 3;
+const int FISH_BREED = 1;
+const int SHARK_BREED = 6;
 const int SHARK_STARVE = 3;
 const int NUM_THREADS = 1;
-const int SHARK_ENERGY_GAIN = 2;
+const int SHARK_ENERGY_GAIN = 1;
 const int WindowXSize = 800;
 const int WindowYSize = 600;
 const int cellXSize = WindowXSize / ROWS;
@@ -265,17 +265,14 @@ void initialize() {
       display[i][k].setSize(sf::Vector2f(cellXSize,cellYSize));
       display[i][k].setPosition(i*cellXSize,k*cellYSize);
       int id=i*1-+k;
-      //if(false)
-      //if(id%6==0) {
-      // if(i == 7 && k == 7) {
-      //   Cell c;
-      //   setCell(i, k, c.toShark());
-      // }
-      if (id%2==0) { 
-      //if(i == 5 && k == 6) {  
-         Cell c;
-         setCell(i,k, c.toFish());
-       }
+      if(id%9==0) {
+        Cell c;
+        setCell(i, k, c.toShark());
+      }
+      else if (id%6==0) { 
+        Cell c;
+        setCell(i,k, c.toFish());
+      }
       else {
         Cell c;
         setCell(i, k, c.toOcean());
