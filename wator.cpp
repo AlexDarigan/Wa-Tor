@@ -240,55 +240,34 @@ void move(int xDirection, int yDirection, bool overridingFreeWill = false) {
 
 uint r_seed = 1337;
 
-void move() {
+void moveX(int xDirection, int yDirection) {
   #pragma omp parallel for collapse(2)
   for(int y = 0; y < DIMENSIONS; ++y) {
     for(int x = 0; x < DIMENSIONS; ++x) {
-      int xDestination = (x + 1) % DIMENSIONS;
+      int xDestination = getNextMove(x, xDirection);
+      int yDestination = getNextMove(y, yDirection);
       if(cells[x][y].celltype == CellType::Fish) {
-        if((cells[xDestination][y].celltype == CellType::Ocean) && ((rand_r(&r_seed) % 2) == 1)) {
-          future[xDestination][y] = cells[x][y];
+        if((cells[xDestination][yDestination].celltype == CellType::Ocean) && ((rand_r(&r_seed) % 2) == 1)) {
+          future[xDestination][yDestination] = cells[x][y];
         } else {
           future[x][y] = cells[x][y];
         }
       }
     }
-  }
+    }
 }
 
 int main()
 {
   srand(0);
   initialize();
-  omp_set_num_threads(6);
+  omp_set_num_threads(1);
   while (window.isOpen())
   {
       poll();
       auto start = std::chrono::steady_clock::now();
-      move();
-      // #pragma omp parallel for collapse(2)
-      // for(int y = 0; y < DIMENSIONS; ++y) {
-      //   for(int x = 0; x < DIMENSIONS; ++x) {
-      //     int xDestination = (x + 1) % DIMENSIONS;
-      //     if(cells[x][y].celltype == CellType::Fish) {
-      //       if((cells[xDestination][y].celltype == CellType::Ocean) && ((rand_r(&r_seed) % 2) == 1)) {
-      //         future[xDestination][y] = cells[x][y];
-      //       } else {
-      //         future[x][y] = cells[x][y];
-      //       }
-      //     }
-          // if(willMove(x, y, xDestination, y, OVERRIDING_FREEWILL)) {
-          //   future[xDestination][y] = cells[x][y];
-          // }
-          // } else {
-          //   if(cells[x][y].celltype == CellType::Fish) {
-          //     future[x][y] = cells[x][y];
-          //   }
-      //     // }
-      //   }
-      // }
-      //}
-
+      moveX(RIGHT, STANDSTILL);
+   
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     printf("Duration: %ld\n", duration);
