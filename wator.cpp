@@ -239,35 +239,44 @@ void move(int xDirection, int yDirection, bool overridingFreeWill = false) {
 }
 
 uint r_seed = 1337;
+
+void move() {
+  #pragma omp parallel for collapse(2)
+  for(int y = 0; y < DIMENSIONS; ++y) {
+    for(int x = 0; x < DIMENSIONS; ++x) {
+      int xDestination = (x + 1) % DIMENSIONS;
+      if(cells[x][y].celltype == CellType::Fish) {
+        if((cells[xDestination][y].celltype == CellType::Ocean) && ((rand_r(&r_seed) % 2) == 1)) {
+          future[xDestination][y] = cells[x][y];
+        } else {
+          future[x][y] = cells[x][y];
+        }
+      }
+    }
+  }
+}
+
 int main()
 {
   srand(0);
   initialize();
-  omp_set_num_threads(1);
+  omp_set_num_threads(6);
   while (window.isOpen())
   {
       poll();
       auto start = std::chrono::steady_clock::now();
-
-// bool willMove(int x, int y, int destX, int destY, bool overrideFreeWill) {
-//   return (
-//     (cells[x][y].celltype == CellType::Fish) 
-//     && cells[destX][destY].celltype == Ocean 
-//     && (overrideFreeWill || (rand() % 2) == 1) // (Yes / No) OR Divine Intervention
-//   );
-// }
-
-      #pragma omp parallel for collapse(2)
-      for(int y = 0; y < DIMENSIONS; ++y) {
-        for(int x = 0; x < DIMENSIONS; ++x) {
-          int xDestination = (x + 1) % DIMENSIONS;
-          if(cells[x][y].celltype == CellType::Fish) {
-            if((cells[xDestination][y].celltype == CellType::Ocean) && ((rand_r(&r_seed) % 2) == 1)) {
-              future[xDestination][y] = cells[x][y];
-            } else {
-              future[x][y] = cells[x][y];
-            }
-          }
+      move();
+      // #pragma omp parallel for collapse(2)
+      // for(int y = 0; y < DIMENSIONS; ++y) {
+      //   for(int x = 0; x < DIMENSIONS; ++x) {
+      //     int xDestination = (x + 1) % DIMENSIONS;
+      //     if(cells[x][y].celltype == CellType::Fish) {
+      //       if((cells[xDestination][y].celltype == CellType::Ocean) && ((rand_r(&r_seed) % 2) == 1)) {
+      //         future[xDestination][y] = cells[x][y];
+      //       } else {
+      //         future[x][y] = cells[x][y];
+      //       }
+      //     }
           // if(willMove(x, y, xDestination, y, OVERRIDING_FREEWILL)) {
           //   future[xDestination][y] = cells[x][y];
           // }
@@ -275,9 +284,9 @@ int main()
           //   if(cells[x][y].celltype == CellType::Fish) {
           //     future[x][y] = cells[x][y];
           //   }
-          // }
-        }
-      }
+      //     // }
+      //   }
+      // }
       //}
 
     auto end = std::chrono::steady_clock::now();
