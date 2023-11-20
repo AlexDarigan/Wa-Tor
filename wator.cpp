@@ -111,7 +111,6 @@ struct Cell {
         int x2 = neighbours[location].getX();
         int y2 = neighbours[location].getY();
         if(getCell(x2, y2).isFish()) {
-          printf("Eating fish");
           turn = turn + 1;
           hasMoved = true;
           energy += SHARK_ENERGY_GAIN;
