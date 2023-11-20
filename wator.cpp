@@ -69,7 +69,6 @@ struct Cell {
 
     
     void moveFish(int x, int y) {  
-      // get neighbours
       int north = (y - 1 + ROWS) % ROWS;
       int south = y + 1 % ROWS;
       int east = x + 1 % COLUMNS;
