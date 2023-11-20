@@ -34,7 +34,7 @@ const int COLUMNS = 10;
 const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
 const int FISH_BREED = 3;
-const int SHARK_BREED = 6;
+const int SHARK_BREED = 3;
 const int SHARK_STARVE = 3;
 const int NUM_THREADS = 1;
 const int SHARK_ENERGY_GAIN = 2;
@@ -103,7 +103,9 @@ struct Cell {
       int west = (x - 1 + COLUMNS) % COLUMNS;
       Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
       int location = rand() % 4;
-      int x2, y2;
+    
+      int x2;
+      int y2;
       energy = energy - 1;
       for(int i = 0; i < 4; i++) {
         int x2 = neighbours[location].getX();
@@ -113,6 +115,19 @@ struct Cell {
           turn = turn + 1;
           hasMoved = true;
           energy += SHARK_ENERGY_GAIN;
+          Cell prev;
+          prev = prev.toOcean();
+          if(turn == SHARK_BREED) {
+            turn = 0;
+            prev = prev.toShark();
+          }
+          if(this->energy <= 0) {
+            setCell(x2, y2, this->toOcean());
+            setCell(x, y, prev);
+          } else {
+            setCell(x2, y2, *this);
+            setCell(x, y, prev);
+          }
           break;
         }
         if(!hasMoved) { location = (location + 1) % 4;}
@@ -124,61 +139,50 @@ struct Cell {
           if(getCell(x2, y2).isOcean()) {
             turn++;
             hasMoved = true;
+            Cell prev;
+            prev = prev.toOcean();
+            if(turn == SHARK_BREED) {
+              turn = 0;
+              prev = prev.toShark();
+            }
+            if(this->energy <= 0) {
+              setCell(x2, y2, this->toOcean());
+              setCell(x, y, prev);
+            } else {
+              setCell(x2, y2, *this);
+              setCell(x, y, prev);
+            }
             break;
           }
         if(!hasMoved) { location = (location + 1) % 4;}
         }
       }
+    }
 
-      printf("A: %d\n", this->energy);
-      if(hasMoved) {
-        setCell(x2, y2, *this);
-        setCell(x, y, toOcean());
-      }
-      printf("B: %d\n", this->energy);
+    //   // if turn == breeding and moved, prev = shark
+    //   // if energy == 0
+    //     // if moving, set x2,y2,ocean
+    //     // if not moving, set x, y ocean,
 
-
-      // if(turn == SHARK_BREED && hasMoved) {
-      //   setCell(x, y, toOcean());
-      //   setCell(x2, y2, *this);
-      // }
-
-      if(energy <= 0 && hasMoved) {
-        setCell(x2, y2, toOcean());
-      }
-
-      // else if(energy < 0 && !hasMoved) {
-      //   setCell(x, y, toOcean());
-      // }
-      // breed?
-      // die?
-      // die new cell?
-      // diew prev cell?
-
-      // if turn == breeding and moved, prev = shark
-      // if energy == 0
-        // if moving, set x2,y2,ocean
-        // if not moving, set x, y ocean,
-
-      // setCell(x, y);
-      // if(turn == SHARK_BREED && hasMoved) {
-      //   Cell prev;
-      //   turn = 0;
-      //   prev = prev.toShark();
-      //   setCell(x, y, prev);
-      // }
-      // if(energy <= 0) {
-      //   next = this->toOcean();
-      // }
-      // setCell(x, y, prev);
-      // setCell(x2, y, )
-    } 
+    //   setCell(x, y);
+    //   if(turn == SHARK_BREED && hasMoved) {
+    //     Cell prev;
+    //     turn = 0;
+    //     prev = prev.toShark();
+    //     setCell(x, y, prev);
+    //   }
+    //   if(energy <= 0) {
+    //     next = this->toOcean();
+    //   }
+    //   setCell(x, y, prev);
+    //   setCell(x2, y, )
+    // } 
 
 
     Cell toOcean() {
       Cell copy;
       copy.celltype = CellType::Ocean;
-      copy.color = sf::Color::Blue;
+      color = sf::Color::Blue;
       return copy;
     }
 
