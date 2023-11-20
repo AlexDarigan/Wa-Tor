@@ -40,6 +40,7 @@ struct Cell {
   bool hasMoved = false;
   int birthRate = 3;
   int starvation = 3;
+  int energy = 0;
   int turn = 0;
 
   bool isOcean() { return celltype == CellType::Ocean; };
@@ -266,7 +267,7 @@ int main()
         if(cells[x][y].isShark() && !cells[x][y].hasMoved) {
           bool hasMoved = false;
           int lookDirection = rand() % 4;
-          cells[x][y].turn++;
+          cells[x][y].energy++;
           for(int i = 0; i < 4; ++i) {
             switch (lookDirection) {
               case North: {
@@ -274,7 +275,7 @@ int main()
                   if(cells[x][north].isFish()) {
                     cells[x][north] = cells[x][y];
                     cells[x][north].hasMoved = true;
-                    cells[x][north].turn--;
+                    cells[x][north].energy--;
                     cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
@@ -285,7 +286,7 @@ int main()
                   if(cells[east][y].isFish()) {
                     cells[east][y] = cells[x][y];
                     cells[east][y].hasMoved = true;
-                    cells[east][y].turn--;
+                    cells[east][y].energy--;
                     cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
@@ -296,7 +297,7 @@ int main()
                   if(cells[x][south].isFish()) {
                     cells[x][south] = cells[x][y];
                     cells[x][south].hasMoved = true;
-                    cells[x][south].turn--;
+                    cells[x][south].energy--;
                     cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
@@ -307,7 +308,7 @@ int main()
                   if(cells[west][y].isFish()) {
                     cells[west][y] = cells[x][y];
                     cells[west][y].hasMoved = true;
-                    cells[west][y].turn--;
+                    cells[west][y].energy--;
                     cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
@@ -321,7 +322,7 @@ int main()
               break; 
             }
           }
-          if(cells[x][y].isShark() && cells[x][y].turn == cells[x][y].starvation) {
+          if(cells[x][y].isShark() && cells[x][y].energy == cells[x][y].starvation) {
             cells[x][y].celltype = Ocean;
           }
       }
