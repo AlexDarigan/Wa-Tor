@@ -129,12 +129,13 @@ void initialize() {
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);
       int id=i*1-+k;
       //if(false)
-      if(id%5==0) {
+      //if(id%5==0) {
+      if(i == 7 && k == 7) {
         recArray[i][k].setFillColor(sf::Color::Red);
         cells[i][k].celltype = CellType::Shark;
       }
-      else if (id%2==0) { 
-      //if(i == 5 && k == 6) {  
+      //else if (id%2==0) { 
+      else if(i == 5 && k == 6) {  
         recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Fish;
       }
@@ -159,6 +160,7 @@ int main()
 {
   srand(0);
   initialize();
+  draw();
  // omp_set_num_threads(6);
   while (window.isOpen())
   {
@@ -236,6 +238,7 @@ int main()
                   if(cells[x][north].isFish()) {
                     cells[x][north] = cells[x][y];
                     cells[x][north].hasMoved = true;
+                    cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
                 }
@@ -245,6 +248,7 @@ int main()
                   if(cells[east][y].isFish()) {
                     cells[east][y] = cells[x][y];
                     cells[east][y].hasMoved = true;
+                    cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
                 }
@@ -254,6 +258,7 @@ int main()
                   if(cells[x][south].isFish()) {
                     cells[x][south] = cells[x][y];
                     cells[x][south].hasMoved = true;
+                    cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
                 }
@@ -263,6 +268,7 @@ int main()
                   if(cells[west][y].isFish()) {
                     cells[west][y] = cells[x][y];
                     cells[west][y].hasMoved = true;
+                    cells[x][y].celltype = CellType::Ocean;
                     hasMoved = true;
                   }
                 }
@@ -284,8 +290,8 @@ int main()
     }
 
     setColors();
-    countFish();
     draw();
+    countFish();
   }
     
     return 0;
