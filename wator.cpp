@@ -35,8 +35,9 @@ const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
 const int FISH_BREED = 3;
 const int SHARK_BREED = 3;
-const int SHARK_STARVE = 3;
+const int SHARK_STARVE = -3;
 const int NUM_THREADS = 1;
+const int SHARK_ENERGY_GAIN = 2;
 const int WindowXSize = 800;
 const int WindowYSize = 600;
 const int cellXSize = WindowXSize / ROWS;
@@ -94,6 +95,58 @@ struct Cell {
        if(!hasMoved) { location = (location + 1) % 4; }
      }
     }
+
+    void moveShark(int x, int y) {
+      int north = (y - 1 + ROWS) % ROWS;
+      int south = y + 1 % ROWS;
+      int east = x + 1 % COLUMNS;
+      int west = (x - 1 + COLUMNS) % COLUMNS;
+      Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
+      int location = rand() % 4;
+    
+      energy--;
+      for(int i = 0; i < 4; i++) {
+        int x2 = neighbours[location].getX();
+        int y2 = neighbours[location].getY();
+        if(getCell(x2, y2).isFish()) {
+          turn = turn + 1;
+          hasMoved = true;
+          energy += SHARK_ENERGY_GAIN;
+          Cell prev;
+          prev = prev.toOcean();
+          if(turn == SHARK_BREED) {
+            turn = 0;
+            prev = prev.toShark();
+          }
+          setCell(x2, y2, *this);
+          setCell(x, y, prev);
+          break;
+        }
+        if(!hasMoved) { location = (location + 1) % 4;}
+      }
+      if(!hasMoved) {
+        for(int i = 0; i < 4; ++i) {
+          int x2 = neighbours[location].getX();
+          int y2 = neighbours[location].getY();
+          if(getCell(x2, y2).isOcean()) {
+            turn++;
+            hasMoved = true;
+            Cell prev;
+            prev = prev.toOcean();
+            if(turn == FISH_BREED) {
+              turn = 0;
+              prev = prev.toShark();
+            }
+            setCell(x2, y2, *this);
+            setCell(x, y, prev);
+            break;
+          }
+        }
+      }
+      // breed <--- only if moved
+      // starve
+    } 
+
 
     Cell toOcean() {
       celltype = CellType::Ocean;
@@ -268,6 +321,15 @@ int main()
       for(int x = 0; x < COLUMNS; ++x) {
         if(cells[x][y].isFish() && !cells[x][y].hasMoved) {
           cells[x][y].moveFish(x, y);
+      }
+    }
+
+    // Move Shark
+    for(int y = 0; y < ROWS; ++y) {
+      for(int x = 0; x < COLUMNS; ++x) {
+        if(cells[x][y].isShark() && !cells[x][y].hasMoved) {
+          cells[x][y].moveShark(x, y);
+        }
       }
     }
   }
