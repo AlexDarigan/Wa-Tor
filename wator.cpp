@@ -240,11 +240,32 @@ int main()
                   }
                 }
                 break;
-              case East:
+              case East: {
+                int east = (x + 1) % DIMENSIONS;
+                  if(cells[east][y].isFish()) {
+                    cells[east][y] = cells[x][y];
+                    cells[east][y].hasMoved = true;
+                    hasMoved = true;
+                  }
+                }
                 break;
-              case South:
+              case South: {
+                int south = (y + 1) % DIMENSIONS;
+                  if(cells[x][south].isFish()) {
+                    cells[x][south] = cells[x][y];
+                    cells[x][south].hasMoved = true;
+                    hasMoved = true;
+                  }
+                }
                 break;
-              case West:
+              case West: {
+                int west = (x - 1 + DIMENSIONS) % DIMENSIONS;
+                  if(cells[west][y].isFish()) {
+                    cells[west][y] = cells[x][y];
+                    cells[west][y].hasMoved = true;
+                    hasMoved = true;
+                  }
+                }
                 break;
               default:
                 break;
