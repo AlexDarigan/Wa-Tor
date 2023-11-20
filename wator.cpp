@@ -35,7 +35,7 @@ const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
 const int FISH_BREED = 3;
 const int SHARK_BREED = 3;
-const int SHARK_STARVE = -3;
+const int SHARK_STARVE = 3;
 const int NUM_THREADS = 1;
 const int SHARK_ENERGY_GAIN = 2;
 const int WindowXSize = 800;
@@ -52,7 +52,7 @@ struct Cell {
 
   private:
     CellType celltype = CellType::Ocean;
-    int energy = SHARK_STARVE;
+    int energy = 0;
     int turn = 0;
     sf::Color color = sf::Color::Blue;
     int x;
@@ -104,45 +104,64 @@ struct Cell {
       Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
       int location = rand() % 4;
     
-      energy--;
-      for(int i = 0; i < 4; i++) {
-        int x2 = neighbours[location].getX();
-        int y2 = neighbours[location].getY();
-        if(getCell(x2, y2).isFish()) {
-          turn = turn + 1;
-          hasMoved = true;
-          energy += SHARK_ENERGY_GAIN;
-          Cell prev;
-          prev = prev.toOcean();
-          if(turn == SHARK_BREED) {
-            turn = 0;
-            prev = prev.toShark();
-          }
-          setCell(x2, y2, *this);
-          setCell(x, y, prev);
-          break;
-        }
-        if(!hasMoved) { location = (location + 1) % 4;}
-      }
+      int x2;
+      int y2;
+      energy = energy - 1;
+      // for(int i = 0; i < 4; i++) {
+      //   int x2 = neighbours[location].getX();
+      //   int y2 = neighbours[location].getY();
+      //   if(getCell(x2, y2).isFish()) {
+      //     printf("Eating fish");
+      //     turn = turn + 1;
+      //     hasMoved = true;
+      //     energy += SHARK_ENERGY_GAIN;
+      //     Cell prev;
+      //     prev = prev.toOcean();
+      //     // if(turn == SHARK_BREED) {
+      //     //   turn = 0;
+      //     //   prev = prev.toShark();
+      //     // }
+      //     setCell(x2, y2, *this);
+      //     setCell(x, y, prev);
+      //     break;
+      //   }
+      //   if(!hasMoved) { location = (location + 1) % 4;}
+      // }
       if(!hasMoved) {
         for(int i = 0; i < 4; ++i) {
-          int x2 = neighbours[location].getX();
-          int y2 = neighbours[location].getY();
+          x2 = neighbours[location].getX();
+          y2 = neighbours[location].getY();
           if(getCell(x2, y2).isOcean()) {
             turn++;
             hasMoved = true;
             Cell prev;
             prev = prev.toOcean();
-            if(turn == FISH_BREED) {
-              turn = 0;
-              prev = prev.toShark();
+          //   // if(turn == FISH_BREED) {
+          //   //   turn = 0;
+          //   //   prev = prev.toShark();
+          //   // }
+
+            printf("Energy: %d\n", this->energy);
+            Cell c = *this;
+            if(this->energy <= 0) {
+              printf("dying");
+              Cell c = this->toOcean(); // changes the states
+              setCell(x2, y2, this->toOcean());
+              setCell(x, y, prev);
+            } else {
+              setCell(x2, y2, *this);
+              setCell(x, y, prev);
             }
-            setCell(x2, y2, *this);
-            setCell(x, y, prev);
             break;
           }
         }
       }
+      //printf("Energy: %d\n", energy);
+      // if(energy <= 0) {
+      //   Cell prev;
+      //   setCell(x2, y2, prev.toOcean());
+      //   setCell(x, y, prev);
+      // }
       // breed <--- only if moved
       // starve
     } 
@@ -165,7 +184,7 @@ struct Cell {
     Cell toShark() {
       celltype = CellType::Shark;
       color = sf::Color::Red;
-      energy = 0;
+      energy = SHARK_STARVE;
       turn = 0;
       hasMoved = false;
       return *this;
@@ -244,16 +263,16 @@ void initialize() {
       display[i][k].setPosition(i*cellXSize,k*cellYSize);
       int id=i*1-+k;
       //if(false)
-      if(id%6==0) {
-     // if(i == 7 && k == 7) {
+      //if(id%6==0) {
+      if(i == 7 && k == 7) {
         Cell c;
         setCell(i, k, c.toShark());
       }
       //else if (id%2==0) { 
-      else if(i == 5 && k == 6) {  
-        Cell c;
-        setCell(i,k, c.toFish());
-      }
+      // else if(i == 5 && k == 6) {  
+      //   Cell c;
+      //   setCell(i,k, c.toFish());
+      // }
       else {
         Cell c;
         setCell(i, k, c.toOcean());
