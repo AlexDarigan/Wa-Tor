@@ -277,6 +277,14 @@ int main()
                     cells[x][north].hasMoved = true;
                     cells[x][north].energy--;
                     cells[x][y].celltype = CellType::Ocean;
+                    if(cells[x][north].turn == cells[x][north].birthRate) {
+                      cells[x][y].celltype = CellType::Shark;
+                      cells[x][y].birthRate = 3;
+                      cells[x][y].turn = 0;
+                      cells[north][y].turn = 0;
+                    } else {
+                      cells[x][y].celltype = CellType::Ocean;
+                    }
                     hasMoved = true;
                   }
                 }
@@ -287,7 +295,14 @@ int main()
                     cells[east][y] = cells[x][y];
                     cells[east][y].hasMoved = true;
                     cells[east][y].energy--;
-                    cells[x][y].celltype = CellType::Ocean;
+                    if(cells[east][y].turn == cells[east][y].birthRate) {
+                      cells[x][y].celltype = CellType::Shark;
+                      cells[x][y].birthRate = 3;
+                      cells[x][y].turn = 0;
+                      cells[x][east].turn = 0;
+                    } else {
+                      cells[x][y].celltype = CellType::Ocean;
+                    }
                     hasMoved = true;
                   }
                 }
@@ -298,7 +313,14 @@ int main()
                     cells[x][south] = cells[x][y];
                     cells[x][south].hasMoved = true;
                     cells[x][south].energy--;
+                    if(cells[x][south].turn == cells[x][south].birthRate) {
+                    cells[x][y].celltype = CellType::Shark;
+                    cells[x][y].birthRate = 3;
+                    cells[x][y].turn = 0;
+                    cells[x][south].turn = 0;
+                  } else {
                     cells[x][y].celltype = CellType::Ocean;
+                  }
                     hasMoved = true;
                   }
                 }
@@ -309,7 +331,14 @@ int main()
                     cells[west][y] = cells[x][y];
                     cells[west][y].hasMoved = true;
                     cells[west][y].energy--;
-                    cells[x][y].celltype = CellType::Ocean;
+                    if(cells[west][y].turn == cells[west][y].birthRate) {
+                      cells[x][y].celltype = CellType::Shark;
+                      cells[x][y].birthRate = 3;
+                      cells[x][y].turn = 0;
+                      cells[west][y].turn = 0;
+                    } else {
+                      cells[x][y].celltype = CellType::Ocean;
+                    }
                     hasMoved = true;
                   }
                 }
