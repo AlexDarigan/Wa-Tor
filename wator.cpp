@@ -172,7 +172,7 @@ struct Cell {
       copy.color = sf::Color::Green;
       copy.turn = 0;
       copy.hasMoved = false;
-      return *this;
+      return copy;
     }
 
     Cell toShark() {
@@ -230,7 +230,7 @@ void draw() {
       window.draw(display[i][k]);
     }
   }
-  sf::sleep(sf::seconds(2));
+  sf::sleep(sf::seconds(1));
   window.display();
 }
 
@@ -267,15 +267,15 @@ void initialize() {
       int id=i*1-+k;
       //if(false)
       //if(id%6==0) {
-      if(i == 7 && k == 7) {
-        Cell c;
-        setCell(i, k, c.toShark());
-      }
-      //else if (id%2==0) { 
-      // else if(i == 5 && k == 6) {  
+      // if(i == 7 && k == 7) {
       //   Cell c;
-      //   setCell(i,k, c.toFish());
+      //   setCell(i, k, c.toShark());
       // }
+      if (id%2==0) { 
+      //if(i == 5 && k == 6) {  
+         Cell c;
+         setCell(i,k, c.toFish());
+       }
       else {
         Cell c;
         setCell(i, k, c.toOcean());
