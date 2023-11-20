@@ -64,6 +64,8 @@ struct Cell {
     bool isFish() { return celltype == CellType::Fish; };
     bool isShark() { return celltype == CellType::Shark; };
     void setMove(bool _hasMoved) { hasMoved = _hasMoved; }
+    int getX() { return x; }
+    int getY() { return y; }
 
     
     void moveFish(int x, int y) {  
@@ -75,25 +77,23 @@ struct Cell {
       Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
       int location = rand() % 4;
       for(int i = 0; i < 4; i++) {
-        int x2 = neighbours[location].x;
-        int y2 = neighbours[location].y;
+        int x2 = neighbours[location].getX();
+        int y2 = neighbours[location].getY();
+        printf("x, y, x2, y2 -> %d, %d, %d, %d\n", x, y, x2, y2);
         if(getCell(x2, y2).isOcean()) {
           turn++;
           hasMoved = true;
-          this->x = x;
-          this->y = y;
           setCell(x2, y2, *this);
+          Cell prev;
           if(turn == FISH_BREED) {
             turn = 0;
-            Cell f;
-            setCell(x, y, f.toFish());
+            setCell(x,y, prev.toFish());
           } else {
-            Cell o;
-            setCell(x,y, o.toOcean());
+            setCell(x,y, prev.toOcean());
           }
         }
-        if(!hasMoved) { location = location + 1 % 4; }
-      }
+       if(!hasMoved) { location = (location + 1) % 4; }
+     }
     }
 
     Cell toOcean() {
@@ -119,9 +119,9 @@ struct Cell {
       return *this;
     }
 
-    void setPosition(int x, int y) {
-      this->x = x;
-      this->y = y;
+    void setPosition(int _x, int _y) {
+      x = _x;
+      y = _y;
     }
 
     sf::Color getFillColor() { return this->color; }
@@ -137,7 +137,7 @@ Cell getCell(int x, int y) {
 
 void setCell(int x, int y, Cell cell) {
   cells[x][y] = cell;
-  cell.setPosition(x, y);
+  cells[x][y].setPosition(x, y);
 }
 
 void countFish() {
@@ -194,14 +194,17 @@ void initialize() {
       //if(false)
       if(id%6==0) {
      // if(i == 7 && k == 7) {
-        cells[i][k].toShark();
+        Cell c;
+        setCell(i, k, c.toShark());
       }
       else if (id%2==0) { 
       //else if(i == 5 && k == 6) {  
-        cells[i][k].toFish();
+        Cell c;
+        setCell(i,k, c.toFish());
       }
       else {
-        cells[i][k].toOcean();
+        Cell c;
+        setCell(i, k, c.toOcean());
       }
     }
   }
@@ -261,7 +264,7 @@ int main()
     poll();
 
     
-    // Move Fish
+    //Move Fish
     for(int y = 0; y < ROWS; ++y) {
       for(int x = 0; x < COLUMNS; ++x) {
         if(cells[x][y].isFish() && !cells[x][y].hasMoved) {
