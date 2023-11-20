@@ -29,8 +29,11 @@
 #include <iostream>
 #include <omp.h>
 
-
-// Defining structs because we need more information (like "moved this round")
+// TODO
+// 1 - Add Shark Move
+// 2 - Parallelize
+// 3 - Critical Sections
+// Note: Each iteration of omp for loop is sequential internally
 
 enum Direction { North = 0, East = 1, South = 2, West = 3 };
 enum CellType { Ocean, Fish, Shark };
@@ -46,6 +49,23 @@ struct Cell {
   bool isOcean() { return celltype == CellType::Ocean; };
   bool isFish() { return celltype == CellType::Fish; };
   bool isShark() { return celltype == CellType::Shark; };
+
+  bool toFish() {
+    celltype = CellType::Fish;
+    turn = 0;
+    hasMoved = false;
+  }
+
+  bool toShark() {
+    celltype = CellType::Shark;
+    energy = 0;
+    turn = 0;
+    hasMoved = false;
+  }
+
+  bool breed(int x, int y) {
+
+  }
   
 
 };
@@ -157,9 +177,7 @@ bool moveFish(int x, int y, int x2, int y2) {
     cells[x2][y2] = cells[x][y];
     cells[x2][y2].hasMoved = true;
     if(cells[x2][y2].turn == cells[x2][y2].birthRate) {
-      cells[x][y].celltype = CellType::Fish;
-      cells[x][y].birthRate = 3;
-      cells[x][y].turn = 0;
+      cells[x][y].toFish();
       cells[x2][y2].turn = 0;
     } else {
       cells[x][y].celltype = CellType::Ocean;
@@ -176,9 +194,7 @@ bool moveShark(int x, int y, int x2, int y2) {
     cells[x2][y2].energy--;
     cells[x][y].celltype = CellType::Ocean;
     if(cells[x2][y2].turn == cells[x2][y2].birthRate) {
-      cells[x][y].celltype = CellType::Shark;
-      cells[x][y].birthRate = 3;
-      cells[x][y].turn = 0;
+      cells[x][y].toShark();
       cells[x2][y2].turn = 0;
     } else {
       cells[x][y].celltype = CellType::Ocean;
