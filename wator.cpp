@@ -30,10 +30,6 @@
 #include <omp.h>
 
 
-
-auto start = std::chrono::high_resolution_clock::now();
-auto end = std::chrono::high_resolution_clock::now();
-auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 // Defining structs because we need more information (like "moved this round")
 
 enum Direction { North = 0, East = 1, South = 2, West = 3 };
@@ -45,7 +41,7 @@ struct Cell {
 };
 
 // Constants required by following arrays
-const int DIMENSIONS = 10;  // (600 max) Shape is a square so x and y arrays are the same dimensions
+const int DIMENSIONS = 600;  // (600 max) Shape is a square so x and y arrays are the same dimensions
 const int UP = -1;
 const int DOWN = 1;
 const int RIGHT = 1;
@@ -56,93 +52,6 @@ const bool OVERRIDING_FREEWILL = true;
 // Allocating arrays on the heap by moving them to the global scope
 sf::RectangleShape recArray[DIMENSIONS][DIMENSIONS];
 Cell cells[DIMENSIONS][DIMENSIONS];
-Cell future[DIMENSIONS][DIMENSIONS];
-
-bool willMove(int x, int y, int destX, int destY, bool overrideFreeWill) {
-  return (
-    (cells[x][y].celltype == CellType::Fish) 
-    && cells[destX][destY].celltype == Ocean 
-    && (overrideFreeWill || (rand() % 2) == 1) // (Yes / No) OR Divine Intervention
-  );
-}
-
-int getNextMove(int location, int direction) {
-  // If direction is STANDSTILL (0), then we perform a roundabout to the original location
-  return (location + (1 * direction) + DIMENSIONS) % DIMENSIONS;
-}
-
-
-void moveFish(int xDirection, int yDirection, bool overrideFreeWill = false) {
-  for(int y = 0; y < DIMENSIONS; ++y) {
-    for(int x = 0; x < DIMENSIONS; ++x) {
-      int xDestination = getNextMove(x, xDirection);
-      int yDestination = getNextMove(y, yDirection);
-      if(willMove(x, y, xDestination, yDestination, overrideFreeWill)) {
-        //cells[xDestination][yDestination].celltype = CellType::FutureFish;
-        //cells[x][y].celltype = CellType::PastFish;
-      }
-    }
-  }
-}
-
-void countFish();
-
-void moveLazyFish() {
-  // Handle all the fish who have not yet moved
-  for(int y = 0; y < DIMENSIONS; ++y) {
-    for(int x = 0; x < DIMENSIONS; ++x) {
-      if(cells[x][y].celltype != CellType::Fish) {
-        continue;
-      }
-      int direction = rand() % 4;
-      int options = 4;
-      int xDestination = x;
-      int yDestination = y;
-      while((options > 0) && (!cells[x][y].hasMoved)) {
-        switch(direction) {
-          case Direction::North: {
-              xDestination = getNextMove(x, STANDSTILL);
-              yDestination = getNextMove(y, UP);
-              break;
-            } 
-            case Direction::East: {
-              xDestination = getNextMove(x, RIGHT);
-              yDestination = getNextMove(y, STANDSTILL);
-              break;
-            } 
-            case Direction::South: {
-              xDestination = getNextMove(x, STANDSTILL);
-              yDestination = getNextMove(y, DOWN);
-              break;
-            }
-            case Direction::West: {
-              xDestination = getNextMove(x, LEFT);
-              yDestination = getNextMove(y, STANDSTILL);
-              break;
-            }
-            default:
-              break;
-        }
-        printf("DIRECTION: %d\n", direction);
-        countFish();
-        if(cells[xDestination][yDestination].celltype == CellType::Ocean && future[xDestination][yDestination].celltype == CellType::Ocean) {
-            future[xDestination][yDestination] = cells[x][y];
-            future[x][y].celltype = CellType::Ocean;
-            cells[x][y].hasMoved = true;
-          }
-          --options;
-          // Move to the next direction, wrap if near boundaries with options left
-          direction = (direction + 1) % 4;
-        }
-        if(cells[x][y].celltype == CellType::Fish && !cells[x][y].hasMoved) {
-          future[x][y] = cells[x][y];
-          cells[x][y].hasMoved = true;
-        }
-      }
-    }
-    printf("MOVED LAZY\n");
-}
-
 
 void countFish() {
     // Not working properly, too many fishes
@@ -157,18 +66,6 @@ void countFish() {
     }
     printf("Fishes: %d\n", fishes);
   }
-
-void copyFuture() {
-// Applying future to current
-  for(int y = 0; y < DIMENSIONS; ++y) {
-    for(int x = 0; x < DIMENSIONS; ++x) {
-      cells[x][y] = future[x][y];
-      future[x][y].celltype = CellType::Ocean;
-      cells[x][y].hasMoved = false;
-    }
-  }
-}
-
 
 const int WindowXSize=800;
 const int WindowYSize=600;
@@ -229,8 +126,8 @@ void initialize() {
       //   cells[i][k].celltype = CellType::Shark;
       // }
       //else 
-     // if (id%2==0) { 
-      if(i == 5 && k == 0) {  
+      if (id%2==0) { 
+      //if(i == 5 && k == 0) {  
         recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Fish;
       }
@@ -242,102 +139,45 @@ void initialize() {
   }
 }
 
-void move(int xDirection, int yDirection, bool overridingFreeWill = false) {
-  #pragma omp for collapse(2)
-  for(int y = 0; y < DIMENSIONS; ++y) {
-    for(int x = 0; x < DIMENSIONS; ++x) {
-      int xDestination = getNextMove(x, RIGHT);
-      int yDestination =  getNextMove(y, STANDSTILL);
-      if(willMove(x, y, xDestination, yDestination, overridingFreeWill)) {
-        future[xDestination][yDestination] = cells[x][y];
-      } else {
-        if(cells[x][y].celltype == CellType::Fish) {
-          future[x][y] = cells[x][y];
-        }
-      }
+
+void moveFish() {
+  int direction = rand() % 4;
+  for(int i = 0; i < 4; ++i) {
+    switch (direction)
+    {
+      case North:
+        // check if ocean, move, mark moved
+        return;
+      case East:
+        // check if ocean, move, mark moved
+        return;
+      case South:
+        // check if ocean, move, mark moved
+        return;
+      case West:
+        // check if ocean, move, mark move
+        return;
     }
   }
 }
 
-uint r_seed = 1337;
-
-void moveX(int xDirection, int yDirection) {
-  #pragma omp for collapse(2)
-  for(int y = 0; y < DIMENSIONS; ++y) {
-    for(int x = 0; x < DIMENSIONS; ++x) {
-      int xDestination = getNextMove(x, xDirection);
-      int yDestination = getNextMove(y, yDirection);
-      if(cells[x][y].celltype == CellType::Fish && !cells[x][y].hasMoved) {
-        if((cells[xDestination][yDestination].celltype == CellType::Ocean) && ((rand_r(&r_seed) % 2) == 1)) {
-          future[xDestination][yDestination] = cells[x][y];
-          cells[x][y].hasMoved = true;
-        } else {
-          future[x][y] = cells[x][y];
-        }
-      }
-    }
-    }
-}
+void moveShark() { }
 
 int main()
 {
   srand(0);
   initialize();
-  omp_set_num_threads(1);
+  omp_set_num_threads(6);
   while (window.isOpen())
   {
     poll();
     auto start = std::chrono::steady_clock::now();
-
-    #pragma omp parallel
-    {
-
-      #pragma omp for collapse(2)
-      for(int y = 0; y < DIMENSIONS; ++y) {
-        for(int x = 0; x < DIMENSIONS; ++x) {
-          int xDestination = getNextMove(x, RIGHT);
-          int yDestination = getNextMove(y, STANDSTILL);
-          if(cells[x][y].celltype == CellType::Fish && !cells[x][y].hasMoved) {
-            if((cells[xDestination][yDestination].celltype == CellType::Ocean) && ((rand_r(&r_seed) % 2) == 1)) {
-              future[xDestination][yDestination] = cells[x][y];
-              cells[x][y].hasMoved = true;
-            }
-          }
-        }
-      }
-      printf("POST FIRST\n");
-      countFish();
-      #pragma omp for collapse(2)
-      for(int y = 0; y < DIMENSIONS; ++y) {
-        for(int x = 0; x < DIMENSIONS; ++x) {
-          int xDestination = getNextMove(x, LEFT);
-          int yDestination = getNextMove(y, STANDSTILL);
-          if(cells[x][y].celltype == CellType::Fish && !cells[x][y].hasMoved) {
-            if((cells[xDestination][yDestination].celltype == CellType::Ocean) && (future[xDestination][yDestination].celltype == CellType::Ocean) && ((rand_r(&r_seed) % 2) == 1)) {
-              future[xDestination][yDestination] = cells[x][y];
-              cells[x][y].hasMoved = true;
-            }
-          }
-        }
-      }
-    }
-
-    moveLazyFish();
-//      #pragma omp barrier
-//    }
-
-    // #pragma omp parallel
-    // {
-    //   moveX(LEFT, STANDSTILL);
-    // }
-    //moveX(LEFT, STANDSTILL);
-    // moveX(STANDSTILL, UP);
-    // moveX(STANDSTILL, DOWN);
+    moveFish();
+    moveShark();
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     printf("Duration: %ld\n", duration);
 
-    copyFuture();
     setColors();
     countFish();
     draw();
