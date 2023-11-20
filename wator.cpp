@@ -181,7 +181,15 @@ int main()
           for(int i = 0; i < 4; ++i) {
             switch (direction)
             {
-              case North: 
+              case North: {
+                int north = (y - 1 + DIMENSIONS) % DIMENSIONS;
+                if(cells[x][north].celltype == CellType::Ocean) {
+                    cells[x][north] = cells[x][y];
+                    cells[x][north].hasMoved = true;
+                    cells[x][y].celltype = CellType::Ocean;
+                    hasMoved = true;
+                  }
+                }
                 break;
               case East: {
                 int east = (x + 1) % DIMENSIONS;
@@ -193,9 +201,25 @@ int main()
                   }
                 }
                 break;
-              case South:
+              case South: {
+                int south = (y + 1) % DIMENSIONS;
+                if(cells[x][south].celltype == CellType::Ocean) {
+                    cells[x][south] = cells[x][y];
+                    cells[x][south].hasMoved = true;
+                    cells[x][y].celltype = CellType::Ocean;
+                    hasMoved = true;
+                  }
+                }
                 break;
-              case West:
+              case West: {
+                int west = (x - 1 + DIMENSIONS) % DIMENSIONS;
+                if(cells[west][y].celltype == CellType::Ocean) {
+                    cells[west][y] = cells[x][y];
+                    cells[west][y].hasMoved = true;
+                    cells[x][y].celltype = CellType::Ocean;
+                    hasMoved = true;
+                  }
+                }
                 break;
               default:
                 break;
