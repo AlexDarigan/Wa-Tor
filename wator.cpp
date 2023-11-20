@@ -45,27 +45,48 @@ enum Direction { North = 0, East = 1, South = 2, West = 3 };
 enum CellType { Ocean, Fish, Shark };
 
 struct Cell {
-  CellType celltype = CellType::Ocean;
-  bool hasMoved = false;
-  int energy = SHARK_STARVE;
-  int turn = 0;
 
-  bool isOcean() { return celltype == CellType::Ocean; };
-  bool isFish() { return celltype == CellType::Fish; };
-  bool isShark() { return celltype == CellType::Shark; };
+  private:
+    CellType celltype = CellType::Ocean;
+    int energy = SHARK_STARVE;
+    int turn = 0;
+    sf::Color color = sf::Color::Blue;
 
-  void toFish() {
-    celltype = CellType::Fish;
-    turn = 0;
-    hasMoved = false;
-  }
+  public:
 
-  void toShark() {
-    celltype = CellType::Shark;
-    energy = 0;
-    turn = 0;
-    hasMoved = false;
-  }
+    bool hasMoved = false;
+    bool isOcean() { return celltype == CellType::Ocean; };
+    bool isFish() { return celltype == CellType::Fish; };
+    bool isShark() { return celltype == CellType::Shark; };
+    void setMove(bool _hasMoved) { .hasMoved = hasMoved; }
+
+    // MoveFish(x, y)
+    // getNeighbours
+    // getLocation (rand() % 4)
+    // spawn()
+    // prev = Ocean
+    // next = Fish
+    
+    
+    void toOcean() {
+      celltype = CellType::Ocean;
+      color = sf::Color::Blue;
+    }
+
+    void toFish() {
+      celltype = CellType::Fish;
+      color = sf::Color::Green;
+      turn = 0;
+      hasMoved = false;
+    }
+
+    void toShark() {
+      celltype = CellType::Shark;
+      color = sf::Color::Red;
+      energy = 0;
+      turn = 0;
+      hasMoved = false;
+    }
 };
 
 sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
@@ -91,44 +112,31 @@ void countFish() {
 
 
 void draw() {
-   window.clear(sf::Color::Black);
-    for(int i=0;i<ROWS;++i){
-      for(int k=0;k<COLUMNS;++k){
-        window.draw(display[i][k]);
-      }
+  window.clear(sf::Color::Black);
+  for(int i = 0; i < ROWS; ++i){
+    for(int k = 0; k < COLUMNS; ++k){
+      window.draw(display[i][k]);
     }
-      sf::sleep(sf::seconds(2));
-      window.display();
+  }
+  sf::sleep(sf::seconds(2));
+  window.display();
 }
 
 void setColors() {
   for(int y = 0; y < ROWS; ++y) {
     for(int x = 0; x < COLUMNS; ++x) {
-      switch(cells[x][y].celltype) {
-        case CellType::Ocean:
-          display[x][y].setFillColor(sf::Color::Blue);
-          break;
-        case CellType::Fish:
-          display[x][y].setFillColor(sf::Color::Green);
-          break;
-        case CellType::Shark:
-          display[x][y].setFillColor(sf::Color::Red);
-          break;
-        default:
-          break;
-        
-      }
+      display[x][y].setFillColor(cells[x][y].color);
     }
   }
 }
 
 void poll() {
   sf::Event event;
-      while (window.pollEvent(event))
-      {
-          if (event.type == sf::Event::Closed)
-              window.close();
-      }
+  while (window.pollEvent(event))
+  {
+      if (event.type == sf::Event::Closed)
+          window.close();
+  }
 }
 
 void initialize() {
@@ -140,17 +148,14 @@ void initialize() {
       //if(false)
       if(id%6==0) {
      // if(i == 7 && k == 7) {
-        //display[i][k].setFillColor(sf::Color::Red);
-        cells[i][k].celltype = CellType::Shark;
+        cells[i][k].toShark();
       }
       else if (id%2==0) { 
       //else if(i == 5 && k == 6) {  
-        //display[i][k].setFillColor(sf::Color::Green);
-        cells[i][k].celltype = CellType::Fish;
+        cells[i][k].toFish();
       }
       else {
-        //display[i][k].setFillColor(sf::Color::Green);
-        cells[i][k].celltype = CellType::Ocean;
+        cells[i][k].toOcean();
       }
     }
   }
@@ -160,7 +165,7 @@ bool moveFish(int x, int y, int x2, int y2) {
   if(cells[x2][y2].celltype == CellType::Ocean) {
     cells[x][y].turn++;
     cells[x2][y2] = cells[x][y];
-    cells[x2][y2].hasMoved = true;
+    cells[x2][y2].setMove(true);
     if(cells[x2][y2].turn == FISH_BREED) {
       cells[x][y].toFish();
       cells[x2][y2].turn = 0;
@@ -175,7 +180,7 @@ bool moveFish(int x, int y, int x2, int y2) {
 bool moveShark(int x, int y, int x2, int y2, bool justMove = false) {
   if(cells[x2][y2].isFish()) {
     cells[x2][y2] = cells[x][y];
-    cells[x2][y2].hasMoved = true;
+    cells[x2][y2].setMove(true);
     cells[x2][y2].energy--;
     cells[x][y].celltype = CellType::Ocean;
     if(cells[x2][y2].turn == SHARK_BREED) {
