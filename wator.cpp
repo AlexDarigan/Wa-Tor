@@ -175,58 +175,90 @@ int main()
         if(cells[x][y].isFish() && !cells[x][y].hasMoved) {
         bool hasMoved = false;
         int direction = rand() % 4;
-          for(int i = 0; i < 4; ++i) {
-            switch (direction)
-            {
-              case North: {
-                int north = (y - 1 + DIMENSIONS) % DIMENSIONS;
-                if(cells[x][north].celltype == CellType::Ocean) {
-                    cells[x][north] = cells[x][y];
-                    cells[x][north].hasMoved = true;
+        for(int i = 0; i < 4; ++i) {
+          switch (direction)
+          {
+            case North: {
+              int north = (y - 1 + DIMENSIONS) % DIMENSIONS;
+              if(cells[x][north].celltype == CellType::Ocean) {
+                  cells[x][y].turn++;
+                  cells[x][north] = cells[x][y];
+                  cells[x][north].hasMoved = true;
+                  if(cells[x][north].turn == cells[x][north].birthRate) {
+                    cells[x][y].celltype = CellType::Fish;
+                    cells[x][y].birthRate = 3;
+                    cells[x][y].turn = 0;
+                    cells[x][north].turn = 0;
+                  } else {
                     cells[x][y].celltype = CellType::Ocean;
-                    hasMoved = true;
                   }
+                  hasMoved = true;
                 }
-                break;
-              case East: {
-                int east = (x + 1) % DIMENSIONS;
-                if(cells[east][y].celltype == CellType::Ocean) {
-                    cells[east][y] = cells[x][y];
-                    cells[east][y].hasMoved = true;
+              }
+              break;
+            case East: {
+              int east = (x + 1) % DIMENSIONS;
+              if(cells[east][y].celltype == CellType::Ocean) {
+                  cells[x][y].turn++;
+                  cells[east][y] = cells[x][y];
+                  cells[east][y].hasMoved = true;
+                  if(cells[east][y].turn == cells[east][y].birthRate) {
+                      cells[x][y].celltype = CellType::Fish;
+                      cells[x][y].birthRate = 3;
+                      cells[x][y].turn = 0;
+                      cells[east][y].turn = 0;
+                    } else {
+                      cells[x][y].celltype = CellType::Ocean;
+                    }
+                  hasMoved = true;
+                }
+              }
+              break;
+            case South: {
+              int south = (y + 1) % DIMENSIONS;
+              if(cells[x][south].celltype == CellType::Ocean) {
+                  cells[x][y].turn++;
+                  cells[x][south] = cells[x][y];
+                  cells[x][south].hasMoved = true;
+                  if(cells[x][south].turn == cells[x][south].birthRate) {
+                    cells[x][y].celltype = CellType::Fish;
+                    cells[x][y].birthRate = 3;
+                    cells[x][y].turn = 0;
+                    cells[x][south].turn = 0;
+                  } else {
                     cells[x][y].celltype = CellType::Ocean;
-                    hasMoved = true;
                   }
+                  hasMoved = true;
                 }
-                break;
-              case South: {
-                int south = (y + 1) % DIMENSIONS;
-                if(cells[x][south].celltype == CellType::Ocean) {
-                    cells[x][south] = cells[x][y];
-                    cells[x][south].hasMoved = true;
+              }
+              break;
+            case West: {
+              int west = (x - 1 + DIMENSIONS) % DIMENSIONS;
+              if(cells[west][y].celltype == CellType::Ocean) {
+                  cells[x][y].turn++;
+                  cells[west][y] = cells[x][y];
+                  cells[west][y].hasMoved = true;
+                  if(cells[west][y].turn == cells[west][y].birthRate) {
+                    cells[x][y].celltype = CellType::Fish;
+                    cells[x][y].birthRate = 3;
+                    cells[x][y].turn = 0;
+                    cells[west][y].turn = 0;
+                  } else {
                     cells[x][y].celltype = CellType::Ocean;
-                    hasMoved = true;
                   }
+                  hasMoved = true;
                 }
-                break;
-              case West: {
-                int west = (x - 1 + DIMENSIONS) % DIMENSIONS;
-                if(cells[west][y].celltype == CellType::Ocean) {
-                    cells[west][y] = cells[x][y];
-                    cells[west][y].hasMoved = true;
-                    cells[x][y].celltype = CellType::Ocean;
-                    hasMoved = true;
-                  }
-                }
-                break;
-              default:
-                break;
-            }
+              }
+              break;
+            default:
+              break;
           }
-          direction = (direction + 1) % 4;
-          if(hasMoved) { break; }
         }
+        direction = (direction + 1) % 4;
+        if(hasMoved) { break; }
       }
     }
+  }
 
     // Move Shark
     for(int y = 0; y < DIMENSIONS; ++y) {
