@@ -38,6 +38,8 @@ enum CellType { Ocean, Fish, Shark };
 struct Cell {
   CellType celltype = CellType::Ocean;
   bool hasMoved = false;
+  bool birthRate = 3;
+  bool turn = 0;
 
   bool isOcean() { return celltype == CellType::Ocean; };
   bool isFish() { return celltype == CellType::Fish; };
@@ -127,13 +129,12 @@ void initialize() {
       recArray[i][k].setPosition(i*cellXSize,k*cellYSize);
       int id=i*1-+k;
       //if(false)
-      // if(id%10==0) {
-      //   recArray[i][k].setFillColor(sf::Color::Red);
-      //   cells[i][k].celltype = CellType::Shark;
-      // }
-      //else 
-      //if (id%2==0) { 
-      if(i == 5 && k == 6) {  
+      if(id%5==0) {
+        recArray[i][k].setFillColor(sf::Color::Red);
+        cells[i][k].celltype = CellType::Shark;
+      }
+      else if (id%2==0) { 
+      //if(i == 5 && k == 6) {  
         recArray[i][k].setFillColor(sf::Color::Green);
         cells[i][k].celltype = CellType::Fish;
       }
@@ -166,15 +167,6 @@ int main()
     // Move Fish
     for(int y = 0; y < DIMENSIONS; ++y) {
       for(int x = 0; x < DIMENSIONS; ++x) {
-        // if(cells[x][y].celltype == CellType::Fish && !cells[x][y].hasMoved) { // } && !cells[x][y].hasMoved) {
-        //   if(cells[(x + 1) % DIMENSIONS][y].celltype == CellType::Ocean) {
-        //     cells[(x + 1) % DIMENSIONS][y] = cells[x][y];
-        //     cells[(x + 1) % DIMENSIONS][y].hasMoved = true;
-        //     cells[x][y].celltype = CellType::Ocean;
-        //     //hasMoved = true;
-        //   }
-        // }
-
         if(cells[x][y].isFish() && !cells[x][y].hasMoved) {
         bool hasMoved = false;
         int direction = rand() % 4;
@@ -230,7 +222,39 @@ int main()
         }
       }
     }
-  
+
+    // Move Shark
+    for(int y = 0; y < DIMENSIONS; ++y) {
+      for(int x = 0; x < DIMENSIONS; ++x) {
+        if(cells[x][y].isShark() && !cells[x][y].hasMoved) {
+          bool hasMoved = false;
+          int lookDirection = rand() % 4;
+          for(int i = 0; i < 4; ++i) {
+            switch (lookDirection) {
+              case North: {
+                  int north = (y - 1 + DIMENSIONS) % DIMENSIONS;
+                  if(cells[x][north].isFish()) {
+                    cells[x][north] = cells[x][y];
+                    cells[x][north].hasMoved = true;
+                    hasMoved = true;
+                  }
+                }
+                break;
+              case East:
+                break;
+              case South:
+                break;
+              case West:
+                break;
+              default:
+                break;
+            }
+            lookDirection = (lookDirection + 1) % 4;
+            if(hasMoved) { break; }
+        }
+      }
+    }
+  }
 
     for(int y = 0; y < DIMENSIONS; ++y) {
       for(int x = 0; x < DIMENSIONS; ++x) {
