@@ -118,7 +118,7 @@ void setNeighbours(int x, int y, Cell list[]) {
 }
 
   void moveFish(int x, int y) { 
-      Cell fish = cells[x][y];
+      Cell fish = getCell(x, y);
       Cell neighbours[4];
       setNeighbours(x, y, neighbours);
       int location = rand() % 4;
@@ -141,7 +141,7 @@ void setNeighbours(int x, int y, Cell list[]) {
     }
 
 void moveShark(int x, int y) {
-      Cell shark = cells[x][y];
+      Cell shark = getCell(x, y);
       Cell neighbours[4];
       setNeighbours(x, y, neighbours);
       int location = rand() % 4;
