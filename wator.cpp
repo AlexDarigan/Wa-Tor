@@ -48,27 +48,14 @@ struct Cell;
 Cell getCell(int x, int y);
 void setCell(int x, int y, Cell cell);
 
-
-
 struct Cell {
-
-    CellType celltype = CellType::Ocean;
-    sf::Color color = sf::Color::Blue;
+    CellType celltype;
+    sf::Color color;
     int energy = 0;
     int turn = 0;
     int x;
     int y;
     bool hasMoved = false;
-    void setMove(bool _hasMoved) { hasMoved = _hasMoved; }
-    int getX() { return x; }
-    int getY() { return y; }
-
-    void setPosition(int _x, int _y) {
-      x = _x;
-      y = _y;
-    }
-
-    sf::Color getFillColor() { return this->color; }
 };
 
 
@@ -77,9 +64,12 @@ sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor wor
 sf::RectangleShape display[ROWS][COLUMNS];
 Cell cells[ROWS][COLUMNS];
 
+sf::Color getFillColor(int x, int y) { return cells[x][y].color; }
 bool isOcean(int x, int y) { return cells[x][y].celltype == CellType::Ocean; };
 bool isFish(int x, int y) { return cells[x][y].celltype == CellType::Fish; };
 bool isShark(int x, int y) { return cells[x][y].celltype == CellType::Shark; };
+
+// Spawn Methods
 void setOcean(int x, int y) { 
   Cell cell;
   cell.celltype = CellType::Ocean;
@@ -111,8 +101,9 @@ Cell getCell(int x, int y) {
 }
 
 void setCell(int x, int y, Cell cell) {
+  cell.x = x;
+  cell.y = y;
   cells[x][y] = cell;
-  cells[x][y].setPosition(x, y);
 }
 
   void moveFish(int x, int y) { 
@@ -124,8 +115,8 @@ void setCell(int x, int y, Cell cell) {
       Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
       int location = rand() % 4;
       for(int i = 0; i < 4; i++) {
-        int x2 = neighbours[location].getX();
-        int y2 = neighbours[location].getY();
+        int x2 = neighbours[location].x;
+        int y2 = neighbours[location].y;
         if(isOcean(x2, y2)) {
           fish.turn = fish.turn + 1;
           fish.hasMoved = true;
@@ -150,32 +141,21 @@ void moveShark(int x, int y) {
       Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
       int location = rand() % 4;
     
-      int x2;
-      int y2;
-      shark.energy = shark.energy - 1;
+      shark.energy--;
+      shark.turn++;
       for(int i = 0; i < 4; i++) {
-        int x2 = neighbours[location].getX();
-        int y2 = neighbours[location].getY();
+        int x2 = neighbours[location].x;
+        int y2 = neighbours[location].y;
         if(isFish(x2, y2)) {
-          shark.turn = shark.turn + 1;
           shark.hasMoved = true;
           shark.energy += SHARK_ENERGY_GAIN;
           setOcean(x, y);
-          bool breeding = false;
-          if(shark.turn == SHARK_BREED) {
+          if(shark.turn >= SHARK_BREED) {
             shark.turn = 0;
-            breeding = true;
+            setShark(x, y);
           }
-          if(shark.energy <= 0) {
+          if(shark.energy < SHARK_STARVE) {
             setOcean(x2, y2);
-            if(breeding) {
-              setShark(x, y);
-            }
-          } else {
-            setCell(x2, y2, shark);
-            if(breeding) {
-              setShark(x, y);
-            }
           }
           break;
         }
@@ -183,28 +163,17 @@ void moveShark(int x, int y) {
       }
       if(!shark.hasMoved) {
         for(int i = 0; i < 4; ++i) {
-          x2 = neighbours[location].getX();
-          y2 = neighbours[location].getY();
+          int x2 = neighbours[location].x;
+          int y2 = neighbours[location].y;
           if(isOcean(x2, y2)) {
-            shark.turn++;
             shark.hasMoved = true;
             setOcean(x, y);
-            bool isBreeding = false;
-            if(shark.turn == SHARK_BREED) {
+            if(shark.turn >= SHARK_BREED) {
               shark.turn = 0;
-              isBreeding = true;
               setShark(x, y);
             }
-            if(shark.energy <= 0) {
+            if(shark.energy < SHARK_STARVE) {
               setOcean(x2, y2);
-              if(isBreeding) {
-                setShark(x, y);
-              }
-            } else {
-              setCell(x2, y2, shark);
-              if(isBreeding) {
-                setShark(x, y);
-              }
             }
             break;
           }
@@ -251,7 +220,7 @@ void clearMoves() {
 void setColors() {
   for(int y = 0; y < ROWS; ++y) {
     for(int x = 0; x < COLUMNS; ++x) {
-      display[x][y].setFillColor(cells[x][y].getFillColor());
+      display[x][y].setFillColor(getFillColor(x, y));
     }
   }
 }
