@@ -258,7 +258,7 @@ void moveShark(int x, int y) {
             setCell(x2, y2, shark.toOcean());
             setCell(x, y, prev);
           } else {
-            setCell(x2, y2, shark.toOcean());
+            setCell(x2, y2, shark);
             setCell(x, y, prev);
           }
           break;
