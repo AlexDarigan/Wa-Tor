@@ -222,7 +222,7 @@ void draw() {
       window.draw(display[i][k]);
     }
   }
-  sf::sleep(sf::seconds(2));
+ // sf::sleep(sf::seconds(2));
   window.display();
 }
 
@@ -268,7 +268,7 @@ void initialize() {
   }
 }
 
-const int NUM_THREADS = 1;
+const int NUM_THREADS = 6;
 
 
 int main()
@@ -282,22 +282,21 @@ int main()
   while (window.isOpen())
   {
     poll();
-    
     auto start = std::chrono::steady_clock::now();
-  //   #pragma omp parallel for
-    for(int y = 0; y < ROWS; ++y) {
-      for(int x = 0; x < COLUMNS; ++x) {
-        if(isFish(x, y) && !hasMoved(x,y)) {
-          moveFish(x, y);
-        }
-      }
-    }
-    
- //   #pragma omp parallel for
-    for(int y = 0; y < ROWS; ++y) {
-      for(int x = 0; x < COLUMNS; ++x) {
-        if(isShark(x, y) && !hasMoved(x, y)) {
-          moveShark(x, y);
+    #pragma omp parallel
+    {
+      int chunkSize = ROWS / omp_get_num_threads();
+      int start = chunkSize * omp_get_thread_num();
+      int end = start + chunkSize;
+      #pragma omp parallel for collapse(2)
+      for(int y = start ;y < end; ++y) {
+        for(int x = 0; x < COLUMNS; ++x) {
+          if(isFish(x, y) && !hasMoved(x,y)) {
+            moveFish(x, y);
+          }
+          else if(isShark(x, y) && !hasMoved(x, y)) {
+            moveShark(x, y);
+          }
         }
       }
     }
