@@ -29,11 +29,11 @@
 #include <iostream>
 #include <omp.h>
 
-const int ROWS = 600;
-const int COLUMNS = 600;
+const int ROWS = 10;//600;
+const int COLUMNS = 10; //600;
 const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
-const int FISH_BREED = 2;
+const int FISH_BREED = 3;
 const int SHARK_BREED = 6;
 const int SHARK_STARVE = 2;
 const int NUM_THREADS = 1;
@@ -310,13 +310,13 @@ int main()
     
     // Move Shark
  //   #pragma omp parallel for
-    for(int y = 0; y < ROWS - 1; ++y) {
-      for(int x = 0; x < COLUMNS - 1; ++x) {
-        if(isShark(x, y) && !cells[x][y].hasMoved) {
-          moveShark(x, y);
-        }
-      }
-    }
+    // for(int y = 0; y < ROWS - 1; ++y) {
+    //   for(int x = 0; x < COLUMNS - 1; ++x) {
+    //     if(isShark(x, y) && !cells[x][y].hasMoved) {
+    //       moveShark(x, y);
+    //     }
+    //   }
+    // }
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     printf("Duration: %ld\n", duration);
