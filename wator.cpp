@@ -29,11 +29,11 @@
 #include <iostream>
 #include <omp.h>
 
-const int ROWS = 80;
-const int COLUMNS = 80;
+const int ROWS = 20;
+const int COLUMNS = 20;
 const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
-const int FISH_BREED = 1;
+const int FISH_BREED = 2;
 const int SHARK_BREED = 6;
 const int SHARK_STARVE = 2;
 const int NUM_THREADS = 1;
@@ -50,16 +50,12 @@ void setCell(int x, int y, Cell cell);
 
 struct Cell {
 
-  private:
     CellType celltype = CellType::Ocean;
     int energy = 0;
     int turn = 0;
     sf::Color color = sf::Color::Blue;
     int x;
     int y;
-
-  public:
-
     bool hasMoved = false;
     bool isOcean() { return celltype == CellType::Ocean; };
     bool isFish() { return celltype == CellType::Fish; };
@@ -69,32 +65,32 @@ struct Cell {
     int getY() { return y; }
 
     
-    void moveFish(int x, int y) {  
-      int north = (y - 1 + ROWS) % ROWS;
-      int south = y + 1 % ROWS;
-      int east = x + 1 % COLUMNS;
-      int west = (x - 1 + COLUMNS) % COLUMNS;
-      Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
-      int location = rand() % 4;
-      for(int i = 0; i < 4; i++) {
-        int x2 = neighbours[location].getX();
-        int y2 = neighbours[location].getY();
-        if(getCell(x2, y2).isOcean()) {
-          turn = turn + 1;
-          hasMoved = true;
-          Cell prev;
-          prev = prev.toOcean();
-          if(turn == FISH_BREED) {
-            turn = 0;
-            prev = prev.toFish();
-          }
-          setCell(x2, y2, *this);
-          setCell(x, y, prev);
-          break;
-        }
-       if(!hasMoved) { location = (location + 1) % 4; }
-     }
-    }
+    // void moveFish(int x, int y) {  
+    //   int north = (y - 1 + ROWS) % ROWS;
+    //   int south = y + 1 % ROWS;
+    //   int east = x + 1 % COLUMNS;
+    //   int west = (x - 1 + COLUMNS) % COLUMNS;
+    //   Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
+    //   int location = rand() % 4;
+    //   for(int i = 0; i < 4; i++) {
+    //     int x2 = neighbours[location].getX();
+    //     int y2 = neighbours[location].getY();
+    //     if(getCell(x2, y2).isOcean()) {
+    //       turn = turn + 1;
+    //       hasMoved = true;
+    //       Cell prev;
+    //       prev = prev.toOcean();
+    //       if(turn == FISH_BREED) {
+    //         turn = 0;
+    //         prev = prev.toFish();
+    //       }
+    //       setCell(x2, y2, *this);
+    //       setCell(x, y, prev);
+    //       break;
+    //     }
+    //    if(!hasMoved) { location = (location + 1) % 4; }
+    //  }
+    // }
 
     void moveShark(int x, int y) {
       int north = (y - 1 + ROWS) % ROWS;
@@ -205,6 +201,34 @@ void setCell(int x, int y, Cell cell) {
   cells[x][y].setPosition(x, y);
 }
 
+  void moveFish(int x, int y) { 
+      Cell fish = cells[x][y];
+      int north = (y - 1 + ROWS) % ROWS;
+      int south = y + 1 % ROWS;
+      int east = x + 1 % COLUMNS;
+      int west = (x - 1 + COLUMNS) % COLUMNS;
+      Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
+      int location = rand() % 4;
+      for(int i = 0; i < 4; i++) {
+        int x2 = neighbours[location].getX();
+        int y2 = neighbours[location].getY();
+        if(getCell(x2, y2).isOcean()) {
+          fish.turn = fish.turn + 1;
+          fish.hasMoved = true;
+          Cell prev;
+          prev = prev.toOcean();
+          if(fish.turn == FISH_BREED) {
+            fish.turn = 0;
+            prev = prev.toFish();
+          }
+          setCell(x2, y2, fish);
+          setCell(x, y, prev);
+          break;
+        }
+       if(!fish.hasMoved) { location = (location + 1) % 4; }
+     }
+    }
+
 void countFish() {
     int fishes = 0;
     int shark = 0;
@@ -289,17 +313,21 @@ int main()
   while (window.isOpen())
   {
     poll();
-
     
+    
+    auto start = std::chrono::steady_clock::now();
     //Move Fish
+    #pragma omp parallel for
     for(int y = 0; y < ROWS; ++y) {
       for(int x = 0; x < COLUMNS; ++x) {
         if(cells[x][y].isFish() && !cells[x][y].hasMoved) {
-          cells[x][y].moveFish(x, y);
+          //cells[x][y].moveFish(x, y);
+          moveFish(x, y);
       }
     }
-
+    
     // Move Shark
+    #pragma omp parallel for
     for(int y = 0; y < ROWS; ++y) {
       for(int x = 0; x < COLUMNS; ++x) {
         if(cells[x][y].isShark() && !cells[x][y].hasMoved) {
@@ -307,6 +335,9 @@ int main()
         }
       }
     }
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    printf("Duration: %ld\n", duration);
   }
 
 
