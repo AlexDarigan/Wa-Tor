@@ -29,14 +29,13 @@
 #include <iostream>
 #include <omp.h>
 
-const int ROWS = 10;//600;
-const int COLUMNS = 10; //600;
+const int ROWS = 600;//600;
+const int COLUMNS = 600; //600;
 const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
 const int FISH_BREED = 3;
 const int SHARK_BREED = 6;
 const int SHARK_STARVE = 2;
-const int NUM_THREADS = 1;
 const int SHARK_ENERGY_GAIN = 1;
 const int WindowXSize = 800;
 const int WindowYSize = 600;
@@ -85,8 +84,6 @@ void setFish(int x, int y) {
   cell.turn = 0;
   cell.hasMoved = false;
   setCell(x, y, cell);
-  printf("New Fish is Fish: %d, %d: %d\n", x, y, isFish(x, y));
-
 }
 
 void setShark(int x, int y) { 
@@ -111,8 +108,8 @@ void setCell(int x, int y, Cell cell) {
 
 void setNeighbours(int x, int y, Cell list[]) {
   int north = ((y - 1) + ROWS) % ROWS;
-  int south = (y + 1) % ROWS;
-  int east = (x + 1) % COLUMNS;
+  int south = (y + 1) % ROWS; // no braces cause segfault
+  int east = (x + 1) % COLUMNS; // no braces cause segfault
   int west = ((x - 1) + COLUMNS) % COLUMNS;
   list[0] = getCell(x, north);
   list[1] = getCell(east, y);
@@ -156,13 +153,10 @@ void moveShark(int x, int y) {
       for(int i = 0; i < 4; i++) {
         x2 = neighbours[location].x;
         y2 = neighbours[location].y;
-        printf("Fish at: %d, %d\nIsFish: %d\n", x2, y2, isFish(x2, y2));
         if(isFish(x2, y2)) {
-          printf("Found Fish: %d\n", isFish(x2, y2));
           shark.hasMoved = true;
           shark.energy += SHARK_ENERGY_GAIN;
           setOcean(x, y);
-         // setCell(x2, y2, shark);
           break;
         }
         if(!shark.hasMoved) { location = (location + 1) % 4;}
@@ -183,12 +177,11 @@ void moveShark(int x, int y) {
         }
       }
 
-      printf("Shark has moved: %d\n", shark.hasMoved);
       if(shark.hasMoved) {
-        // if(shark.turn >= SHARK_BREED) {
-        //   shark.turn = 0;
-        //   setShark(x, y);
-        // }
+        if(shark.turn >= SHARK_BREED) {
+          shark.turn = 0;
+          setShark(x, y);
+        }
 
         if(shark.energy < 0) {
           setOcean(x2, y2);
@@ -263,25 +256,20 @@ void initialize() {
     for(int k=0;k<COLUMNS;++k){
       display[i][k].setSize(sf::Vector2f(cellXSize,cellYSize));
       display[i][k].setPosition(i*cellXSize,k*cellYSize);
+      setOcean(i, k);
       int id=i*1-+k;
-    //  if(id%9==0) {
-      // i == COLUMNS - 1
-      // k == ROWS - 1
-      // k == 0? <--- O
-      // - 1 issue
-      if(i == 6 && k == 0) {
+      if(id%9==0) {
         setShark(i, k);
       }
-      //else if(i == 0 && k == 6) {
-      else if (id%6==0) { 
+      else if ( id % 6 == 0) { 
         setFish(i, k);
-      }
-      else {
-        setOcean(i, k);
       }
     }
   }
 }
+
+const int NUM_THREADS = 1;
+
 
 int main()
 {
@@ -295,14 +283,10 @@ int main()
   {
     poll();
     
-    printf("Generation %d\n", generation);
-    generation++;
-
-   
-    // auto start = std::chrono::steady_clock::now();
+    auto start = std::chrono::steady_clock::now();
   //   #pragma omp parallel for
-    for(int y = 0; y < ROWS - 1; ++y) {
-      for(int x = 0; x < COLUMNS - 1; ++x) {
+    for(int y = 0; y < ROWS; ++y) {
+      for(int x = 0; x < COLUMNS; ++x) {
         if(isFish(x, y) && !hasMoved(x,y)) {
           moveFish(x, y);
         }
@@ -310,16 +294,17 @@ int main()
     }
     
  //   #pragma omp parallel for
-    for(int y = 0; y < ROWS - 1; ++y) {
-      for(int x = 0; x < COLUMNS - 1; ++x) {
+    for(int y = 0; y < ROWS; ++y) {
+      for(int x = 0; x < COLUMNS; ++x) {
         if(isShark(x, y) && !hasMoved(x, y)) {
           moveShark(x, y);
         }
       }
     }
-    // auto end = std::chrono::steady_clock::now();
-    // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    // printf("Duration: %ld\n", duration);
+    auto end = std::chrono::steady_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    printf("Generation %d Duration: %ld\n", generation, duration);
+    generation++;
 
     clearMoves();
     setColors();
