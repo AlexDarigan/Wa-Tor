@@ -7,14 +7,21 @@ int grid[3][10] = {
 };
 
 int main() {
-    for(int y = 0; y < 3; ++y) {
+    // for(int y = 0; y < 3; ++y) {
+    //     printf("\n");
+    //     int temp = y;
+    //     for(int x = 0; temp > -1; ++x) {
+    //         printf("%d,", grid[temp][x]);
+    //         temp--;
+    //     }
+    // }
+
+    for (int y = 0; y < 3; ++y) {
         printf("\n");
-        int temp = y;
-        for(int x = 0; temp > -1; ++x) {
-            printf("%d,", grid[temp][x]);
-            temp--;
+        for (int x = y; x >= 0; --x) {
+            printf("%d,", grid[y][x]);
         }
-    }
+        }
 
 
     printf("\n");

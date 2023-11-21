@@ -63,11 +63,11 @@ sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor wor
 sf::RectangleShape display[ROWS][COLUMNS];
 Cell cells[ROWS][COLUMNS];
 
-sf::Color getFillColor(int x, int y) { return cells[x][y].color; }
-bool isOcean(int x, int y) { return cells[x][y].celltype == CellType::Ocean; };
-bool isFish(int x, int y) { return cells[x][y].celltype == CellType::Fish; };
-bool isShark(int x, int y) { return cells[x][y].celltype == CellType::Shark; };
-bool hasMoved(int x, int y) { return cells[x][y].hasMoved; }
+sf::Color getFillColor(int x, int y) { return cells[y][x].color; }
+bool isOcean(int x, int y) { return cells[y][x].celltype == CellType::Ocean; };
+bool isFish(int x, int y) { return cells[y][x].celltype == CellType::Fish; };
+bool isShark(int x, int y) { return cells[y][x].celltype == CellType::Shark; };
+bool hasMoved(int x, int y) { return cells[y][x].hasMoved; }
 
 // Spawn Methods
 void setOcean(int x, int y) { 
@@ -97,13 +97,13 @@ void setShark(int x, int y) {
 }
 
 Cell getCell(int x, int y) {
-  return cells[x][y];
+  return cells[y][x];
 }
 
 void setCell(int x, int y, Cell cell) {
   cell.x = x;
   cell.y = y;
-  cells[x][y] = cell;
+  cells[y][x] = cell;
 }
 
 void setNeighbours(int x, int y, Cell list[]) {
@@ -217,9 +217,9 @@ void countFish() {
 
 void draw() {
   window.clear(sf::Color::Black);
-  for(int i = 0; i < ROWS; ++i){
-    for(int k = 0; k < COLUMNS; ++k){
-      window.draw(display[i][k]);
+  for(int y = 0; y < ROWS; ++y){
+    for(int x = 0; x < COLUMNS; ++x){
+      window.draw(display[y][x]);
     }
   }
   sf::sleep(sf::seconds(2));
@@ -237,7 +237,7 @@ void clearMoves() {
 void setColors() {
   for(int y = 0; y < ROWS; ++y) {
     for(int x = 0; x < COLUMNS; ++x) {
-      display[x][y].setFillColor(getFillColor(x, y));
+      display[y][x].setFillColor(getFillColor(x, y));
     }
   }
 }
@@ -252,26 +252,26 @@ void poll() {
 }
 
 void initialize() {
-  for(int i=0;i<ROWS;++i){
-    for(int k=0;k<COLUMNS;++k){
-      display[i][k].setSize(sf::Vector2f(cellXSize,cellYSize));
-      display[i][k].setPosition(i*cellXSize,k*cellYSize);
-      setOcean(i, k);
-      int id=i*1-+k;
+  for(int y = 0; y < ROWS; ++y){
+    for(int x = 0; x < COLUMNS; ++x){
+      display[y][x].setSize(sf::Vector2f(cellXSize,cellYSize));
+      display[y][x].setPosition(x * cellXSize,y * cellYSize);
+      setOcean(x, y);
+      int id=y * 1 -+ x;
       // if(id%9==0) {
-      //   setShark(i, k);
+      //   setShark(y, x);
       // }
       // else if ( id % 6 == 0) { 
-      //   setFish(i, k);
+      //   setFish(y, x);
       // }
-      if(i == 5 && k == 5) {
-        setFish(i, k);
+      if(y == 5 && x == 9) {
+        setFish(x, y);
       }
     }
   }
 }
 
-const int NUM_THREADS = 6;
+const int NUM_THREADS = 3;
 
 
 int main()
@@ -291,11 +291,18 @@ int main()
       int chunkSize = ROWS / omp_get_num_threads();
       int start = chunkSize * omp_get_thread_num();
       int end = start + chunkSize;
-      #pragma omp parallel for collapse(2)
+      // #pragma omp parallel for collapse(2)
+      // for (int y = start + 1; y < end - 1; ++y) {
+      //   for (int x = y; x >= 0; --x) { 
+      //        if(isFish(x, y) && !hasMoved(x,y)) {
+      //         moveFish(x, y);
+      //       }
+      //       else if(isShark(x, y) && !hasMoved(x, y)) {
+      //         moveShark(x, y);
+      //       }
+      //     }
+      //   }
 
-      // 0 0 0
-      // 0 0 0
-      // 0 0 0
 
       for(int y = start ;y < end ; ++y) {
         for(int x = 0; x < COLUMNS; ++x) {
@@ -303,7 +310,7 @@ int main()
               moveFish(x, y);
             }
             else if(isShark(x, y) && !hasMoved(x, y)) {
-              //moveShark(x, y);
+              moveShark(x, y);
             }
         }
       }
