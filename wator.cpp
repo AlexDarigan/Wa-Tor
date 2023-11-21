@@ -29,8 +29,8 @@
 #include <iostream>
 #include <omp.h>
 
-const int ROWS = 10;// 600;//600;
-const int COLUMNS = 10;//600; //600;
+const int ROWS = 600;//600;
+const int COLUMNS = 600; //600;
 const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
 const int FISH_BREED = 3;
@@ -222,7 +222,7 @@ void draw() {
       window.draw(display[y][x]);
     }
   }
-  sf::sleep(sf::seconds(2));
+ // sf::sleep(sf::seconds(2));
   window.display();
 }
 
@@ -258,15 +258,15 @@ void initialize() {
       display[y][x].setPosition(x * cellXSize,y * cellYSize);
       setOcean(x, y);
       int id=y * 1 -+ x;
-      // if(id%9==0) {
-      //   setShark(y, x);
-      // }
-      // else if ( id % 6 == 0) { 
-      //   setFish(y, x);
-      // }
-      if(y == 5 && x == 9) {
+      if(id%9==0) {
+        setShark(x, y);
+      }
+      else if ( id % 6 == 0) { 
         setFish(x, y);
       }
+      // if(y == 5 && x == 9) {
+      //   setFish(x, y);
+      // }
     }
   }
 }
@@ -291,29 +291,30 @@ int main()
       int chunkSize = ROWS / omp_get_num_threads();
       int start = chunkSize * omp_get_thread_num();
       int end = start + chunkSize;
-      // #pragma omp parallel for collapse(2)
-      // for (int y = start + 1; y < end - 1; ++y) {
-      //   for (int x = y; x >= 0; --x) { 
-      //        if(isFish(x, y) && !hasMoved(x,y)) {
-      //         moveFish(x, y);
-      //       }
-      //       else if(isShark(x, y) && !hasMoved(x, y)) {
-      //         moveShark(x, y);
-      //       }
-      //     }
-      //   }
-
-
-      for(int y = start ;y < end ; ++y) {
-        for(int x = 0; x < COLUMNS; ++x) {
-            if(isFish(x, y) && !hasMoved(x,y)) {
+    //  #pragma omp parallel for collapse(2)
+      for (int y = start + 1; y < end - 1; ++y) {
+        for (int x = 0; x < COLUMNS; ++x) { 
+             if(isFish(x, y) && !hasMoved(x,y)) {
               moveFish(x, y);
             }
             else if(isShark(x, y) && !hasMoved(x, y)) {
               moveShark(x, y);
             }
+          }
         }
-      }
+
+
+    //   #pragma omp parallel for collapse(2)
+    //   for(int y = start ;y < end ; ++y) {
+    //     for(int x = 0; x < COLUMNS; ++x) {
+    //         if(isFish(x, y) && !hasMoved(x,y)) {
+    //           moveFish(x, y);
+    //         }
+    //         else if(isShark(x, y) && !hasMoved(x, y)) {
+    //           moveShark(x, y);
+    //         }
+    //     }
+    //   }
     }
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
