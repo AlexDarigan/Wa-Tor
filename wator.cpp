@@ -106,13 +106,21 @@ void setCell(int x, int y, Cell cell) {
   cells[x][y] = cell;
 }
 
+void setNeighbours(int x, int y, Cell list[]) {
+  int north = ((y - 1) + ROWS) % ROWS;
+  int south = y + 1 % ROWS;
+  int east = x + 1 % COLUMNS;
+  int west = ((x - 1) + COLUMNS) % COLUMNS;
+  list[0] = getCell(x, north);
+  list[1] = getCell(east, y);
+  list[2] = getCell(x, south);
+  list[3] = getCell(west, y);
+}
+
   void moveFish(int x, int y) { 
       Cell fish = cells[x][y];
-      int north = ((y - 1) + ROWS) % ROWS;
-      int south = y + 1 % ROWS;
-      int east = x + 1 % COLUMNS;
-      int west = ((x - 1) + COLUMNS) % COLUMNS;
-      Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
+      Cell neighbours[4];
+      setNeighbours(x, y, neighbours);
       int location = rand() % 4;
       for(int i = 0; i < 4; i++) {
         int x2 = neighbours[location].x;
@@ -134,13 +142,9 @@ void setCell(int x, int y, Cell cell) {
 
 void moveShark(int x, int y) {
       Cell shark = cells[x][y];
-      int north = (y - 1 + ROWS) % ROWS;
-      int south = y + 1 % ROWS;
-      int east = x + 1 % COLUMNS;
-      int west = (x - 1 + COLUMNS) % COLUMNS;
-      Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
+      Cell neighbours[4];
+      setNeighbours(x, y, neighbours);
       int location = rand() % 4;
-    
       shark.energy--;
       shark.turn++;
       for(int i = 0; i < 4; i++) {
