@@ -92,67 +92,67 @@ struct Cell {
     //  }
     // }
 
-    void moveShark(int x, int y) {
-      int north = (y - 1 + ROWS) % ROWS;
-      int south = y + 1 % ROWS;
-      int east = x + 1 % COLUMNS;
-      int west = (x - 1 + COLUMNS) % COLUMNS;
-      Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
-      int location = rand() % 4;
+    // void moveShark(int x, int y) {
+    //   int north = (y - 1 + ROWS) % ROWS;
+    //   int south = y + 1 % ROWS;
+    //   int east = x + 1 % COLUMNS;
+    //   int west = (x - 1 + COLUMNS) % COLUMNS;
+    //   Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
+    //   int location = rand() % 4;
     
-      int x2;
-      int y2;
-      energy = energy - 1;
-      for(int i = 0; i < 4; i++) {
-        int x2 = neighbours[location].getX();
-        int y2 = neighbours[location].getY();
-        if(getCell(x2, y2).isFish()) {
-          turn = turn + 1;
-          hasMoved = true;
-          energy += SHARK_ENERGY_GAIN;
-          Cell prev;
-          prev = prev.toOcean();
-          if(turn == SHARK_BREED) {
-            turn = 0;
-            prev = prev.toShark();
-          }
-          if(this->energy <= 0) {
-            setCell(x2, y2, this->toOcean());
-            setCell(x, y, prev);
-          } else {
-            setCell(x2, y2, *this);
-            setCell(x, y, prev);
-          }
-          break;
-        }
-        if(!hasMoved) { location = (location + 1) % 4;}
-      }
-      if(!hasMoved) {
-        for(int i = 0; i < 4; ++i) {
-          x2 = neighbours[location].getX();
-          y2 = neighbours[location].getY();
-          if(getCell(x2, y2).isOcean()) {
-            turn++;
-            hasMoved = true;
-            Cell prev;
-            prev = prev.toOcean();
-            if(turn == SHARK_BREED) {
-              turn = 0;
-              prev = prev.toShark();
-            }
-            if(this->energy <= 0) {
-              setCell(x2, y2, this->toOcean());
-              setCell(x, y, prev);
-            } else {
-              setCell(x2, y2, *this);
-              setCell(x, y, prev);
-            }
-            break;
-          }
-        if(!hasMoved) { location = (location + 1) % 4;}
-        }
-      }
-    }
+    //   int x2;
+    //   int y2;
+    //   energy = energy - 1;
+    //   for(int i = 0; i < 4; i++) {
+    //     int x2 = neighbours[location].getX();
+    //     int y2 = neighbours[location].getY();
+    //     if(getCell(x2, y2).isFish()) {
+    //       turn = turn + 1;
+    //       hasMoved = true;
+    //       energy += SHARK_ENERGY_GAIN;
+    //       Cell prev;
+    //       prev = prev.toOcean();
+    //       if(turn == SHARK_BREED) {
+    //         turn = 0;
+    //         prev = prev.toShark();
+    //       }
+    //       if(this->energy <= 0) {
+    //         setCell(x2, y2, this->toOcean());
+    //         setCell(x, y, prev);
+    //       } else {
+    //         setCell(x2, y2, *this);
+    //         setCell(x, y, prev);
+    //       }
+    //       break;
+    //     }
+    //     if(!hasMoved) { location = (location + 1) % 4;}
+    //   }
+    //   if(!hasMoved) {
+    //     for(int i = 0; i < 4; ++i) {
+    //       x2 = neighbours[location].getX();
+    //       y2 = neighbours[location].getY();
+    //       if(getCell(x2, y2).isOcean()) {
+    //         turn++;
+    //         hasMoved = true;
+    //         Cell prev;
+    //         prev = prev.toOcean();
+    //         if(turn == SHARK_BREED) {
+    //           turn = 0;
+    //           prev = prev.toShark();
+    //         }
+    //         if(this->energy <= 0) {
+    //           setCell(x2, y2, this->toOcean());
+    //           setCell(x, y, prev);
+    //         } else {
+    //           setCell(x2, y2, *this);
+    //           setCell(x, y, prev);
+    //         }
+    //         break;
+    //       }
+    //     if(!hasMoved) { location = (location + 1) % 4;}
+    //     }
+    //   }
+    // }
 
     Cell toOcean() {
       Cell copy;
@@ -227,6 +227,69 @@ void setCell(int x, int y, Cell cell) {
         }
        if(!fish.hasMoved) { location = (location + 1) % 4; }
      }
+    }
+
+void moveShark(int x, int y) {
+      Cell shark = cells[x][y];
+      int north = (y - 1 + ROWS) % ROWS;
+      int south = y + 1 % ROWS;
+      int east = x + 1 % COLUMNS;
+      int west = (x - 1 + COLUMNS) % COLUMNS;
+      Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
+      int location = rand() % 4;
+    
+      int x2;
+      int y2;
+      shark.energy = shark.energy - 1;
+      for(int i = 0; i < 4; i++) {
+        int x2 = neighbours[location].getX();
+        int y2 = neighbours[location].getY();
+        if(getCell(x2, y2).isFish()) {
+          shark.turn = shark.turn + 1;
+          shark.hasMoved = true;
+          shark.energy += SHARK_ENERGY_GAIN;
+          Cell prev;
+          prev = prev.toOcean();
+          if(shark.turn == SHARK_BREED) {
+            shark.turn = 0;
+            prev = prev.toShark();
+          }
+          if(shark.energy <= 0) {
+            setCell(x2, y2, shark.toOcean());
+            setCell(x, y, prev);
+          } else {
+            setCell(x2, y2, shark.toOcean());
+            setCell(x, y, prev);
+          }
+          break;
+        }
+        if(!shark.hasMoved) { location = (location + 1) % 4;}
+      }
+      if(!shark.hasMoved) {
+        for(int i = 0; i < 4; ++i) {
+          x2 = neighbours[location].getX();
+          y2 = neighbours[location].getY();
+          if(getCell(x2, y2).isOcean()) {
+            shark.turn++;
+            shark.hasMoved = true;
+            Cell prev;
+            prev = prev.toOcean();
+            if(shark.turn == SHARK_BREED) {
+              shark.turn = 0;
+              prev = prev.toShark();
+            }
+            if(shark.energy <= 0) {
+              setCell(x2, y2, shark.toOcean());
+              setCell(x, y, prev);
+            } else {
+              setCell(x2, y2, shark);
+              setCell(x, y, prev);
+            }
+            break;
+          }
+        if(!shark.hasMoved) { location = (location + 1) % 4;}
+        }
+      }
     }
 
 void countFish() {
@@ -331,7 +394,7 @@ int main()
     for(int y = 0; y < ROWS; ++y) {
       for(int x = 0; x < COLUMNS; ++x) {
         if(cells[x][y].isShark() && !cells[x][y].hasMoved) {
-          cells[x][y].moveShark(x, y);
+          moveShark(x, y);
         }
       }
     }
