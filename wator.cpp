@@ -29,9 +29,8 @@
 #include <iostream>
 #include <omp.h>
 
-// 85 * 85 (7225) is total size
-const int ROWS = 85;
-const int COLUMNS = 85;
+const int ROWS = 600;
+const int COLUMNS = 600;
 const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
 const int FISH_BREED = 2;
@@ -118,10 +117,10 @@ void setCell(int x, int y, Cell cell) {
 
   void moveFish(int x, int y) { 
       Cell fish = cells[x][y];
-      int north = (y - 1 + ROWS) % ROWS;
+      int north = ((y - 1) + ROWS) % ROWS;
       int south = y + 1 % ROWS;
       int east = x + 1 % COLUMNS;
-      int west = (x - 1 + COLUMNS) % COLUMNS;
+      int west = ((x - 1) + COLUMNS) % COLUMNS;
       Cell neighbours[4] = {getCell(x, north), getCell(east, y), getCell(x, south), getCell(west, y)};
       int location = rand() % 4;
       for(int i = 0; i < 4; i++) {
@@ -138,7 +137,7 @@ void setCell(int x, int y, Cell cell) {
           setCell(x2, y2, fish);
           break;
         }
-       if(!fish.hasMoved) { location = (location + 1) % 4; }
+      if(!fish.hasMoved) { location = (location + 1) % 4; }
      }
     }
 
@@ -298,20 +297,21 @@ int main()
     
     
     auto start = std::chrono::steady_clock::now();
-    //Move Fish
-    #pragma omp parallel for
-    for(int y = 0; y < ROWS; ++y) {
-      for(int x = 0; x < COLUMNS; ++x) {
+  //   //Move Fish
+  //   #pragma omp parallel for
+    for(int y = 0; y < ROWS - 1; ++y) {
+      for(int x = 0; x < COLUMNS - 1; ++x) {
         if(isFish(x, y) && !cells[x][y].hasMoved) {
           //cells[x][y].moveFish(x, y);
           moveFish(x, y);
+        }
       }
     }
     
     // Move Shark
-    #pragma omp parallel for
-    for(int y = 0; y < ROWS; ++y) {
-      for(int x = 0; x < COLUMNS; ++x) {
+ //   #pragma omp parallel for
+    for(int y = 0; y < ROWS - 1; ++y) {
+      for(int x = 0; x < COLUMNS - 1; ++x) {
         if(isShark(x, y) && !cells[x][y].hasMoved) {
           moveShark(x, y);
         }
@@ -320,10 +320,7 @@ int main()
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     printf("Duration: %ld\n", duration);
-  }
 
-
-   
     clearMoves();
     setColors();
     draw();
