@@ -161,24 +161,23 @@ void moveShark(int x, int y) {
         }
         if(!shark.hasMoved) { location = (location + 1) % 4;}
       }
-      if(!shark.hasMoved) {
-        for(int i = 0; i < 4; ++i) {
-          int x2 = neighbours[location].x;
-          int y2 = neighbours[location].y;
-          if(isOcean(x2, y2)) {
-            shark.hasMoved = true;
-            setOcean(x, y);
-            if(shark.turn >= SHARK_BREED) {
-              shark.turn = 0;
-              setShark(x, y);
-            }
-            if(shark.energy < SHARK_STARVE) {
-              setOcean(x2, y2);
-            }
-            break;
+      if(shark.hasMoved) { return; }
+      for(int i = 0; i < 4; ++i) {
+        int x2 = neighbours[location].x;
+        int y2 = neighbours[location].y;
+        if(isOcean(x2, y2)) {
+          shark.hasMoved = true;
+          setOcean(x, y);
+          if(shark.turn >= SHARK_BREED) {
+            shark.turn = 0;
+            setShark(x, y);
           }
-        if(!shark.hasMoved) { location = (location + 1) % 4;}
+          if(shark.energy < SHARK_STARVE) {
+            setOcean(x2, y2);
+          }
+          break;
         }
+      if(!shark.hasMoved) { location = (location + 1) % 4;}
       }
     }
 
