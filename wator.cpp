@@ -29,8 +29,9 @@
 #include <iostream>
 #include <omp.h>
 
-const int ROWS = 20;
-const int COLUMNS = 20;
+// 85 * 85 (7225) is total size
+const int ROWS = 85;
+const int COLUMNS = 85;
 const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
 const int FISH_BREED = 2;
