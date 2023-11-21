@@ -85,6 +85,8 @@ void setFish(int x, int y) {
   cell.turn = 0;
   cell.hasMoved = false;
   setCell(x, y, cell);
+  printf("New Fish is Fish: %d, %d: %d\n", x, y, isFish(x, y));
+
 }
 
 void setShark(int x, int y) { 
@@ -109,8 +111,8 @@ void setCell(int x, int y, Cell cell) {
 
 void setNeighbours(int x, int y, Cell list[]) {
   int north = ((y - 1) + ROWS) % ROWS;
-  int south = y + 1 % ROWS;
-  int east = x + 1 % COLUMNS;
+  int south = (y + 1) % ROWS;
+  int east = (x + 1) % COLUMNS;
   int west = ((x - 1) + COLUMNS) % COLUMNS;
   list[0] = getCell(x, north);
   list[1] = getCell(east, y);
@@ -118,28 +120,28 @@ void setNeighbours(int x, int y, Cell list[]) {
   list[3] = getCell(west, y);
 }
 
-  void moveFish(int x, int y) { 
-      Cell fish = getCell(x, y);
-      Cell neighbours[4];
-      setNeighbours(x, y, neighbours);
-      int location = rand() % 4;
-      for(int i = 0; i < 4; i++) {
-        int x2 = neighbours[location].x;
-        int y2 = neighbours[location].y;
-        if(isOcean(x2, y2)) {
-          fish.turn = fish.turn + 1;
-          fish.hasMoved = true;
-          setOcean(x, y);
-          if(fish.turn == FISH_BREED) {
-            fish.turn = 0;
-            setFish(x, y);
-          }
-          setCell(x2, y2, fish);
-          break;
-        }
-      if(!fish.hasMoved) { location = (location + 1) % 4; }
-     }
+void moveFish(int x, int y) { 
+  Cell fish = getCell(x, y);
+  Cell neighbours[4];
+  setNeighbours(x, y, neighbours);
+  int location = rand() % 4;
+  for(int i = 0; i < 4; i++) {
+    int x2 = neighbours[location].x;
+    int y2 = neighbours[location].y;
+    if(isOcean(x2, y2)) {
+      fish.turn = fish.turn + 1;
+      fish.hasMoved = true;
+      setOcean(x, y);
+      if(fish.turn == FISH_BREED) {
+        fish.turn = 0;
+        setFish(x, y);
+      }
+      setCell(x2, y2, fish);
+      break;
     }
+    if(!fish.hasMoved) { location = (location + 1) % 4; }
+  }
+}
 
 // Sharks should starve even if they don't move
 void moveShark(int x, int y) {
@@ -150,16 +152,17 @@ void moveShark(int x, int y) {
       shark.energy--;
       shark.turn++;
       int x2, y2;
-
       // Hunting Fish
       for(int i = 0; i < 4; i++) {
         x2 = neighbours[location].x;
         y2 = neighbours[location].y;
+        printf("Fish at: %d, %d\nIsFish: %d\n", x2, y2, isFish(x2, y2));
         if(isFish(x2, y2)) {
+          printf("Found Fish: %d\n", isFish(x2, y2));
           shark.hasMoved = true;
           shark.energy += SHARK_ENERGY_GAIN;
           setOcean(x, y);
-          setCell(x2, y2, shark);
+         // setCell(x2, y2, shark);
           break;
         }
         if(!shark.hasMoved) { location = (location + 1) % 4;}
@@ -167,7 +170,7 @@ void moveShark(int x, int y) {
 
       // No fish found
       // Finding free space to move
-      if(shark.hasMoved) {
+      if(!shark.hasMoved) {
           for(int i = 0; i < 4; ++i) {
             int x2 = neighbours[location].x;
             int y2 = neighbours[location].y;
@@ -180,21 +183,24 @@ void moveShark(int x, int y) {
         }
       }
 
+      printf("Shark has moved: %d\n", shark.hasMoved);
       if(shark.hasMoved) {
-        if(shark.turn >= SHARK_BREED) {
-          shark.turn = 0;
-          setShark(x, y);
-        }
+        // if(shark.turn >= SHARK_BREED) {
+        //   shark.turn = 0;
+        //   setShark(x, y);
+        // }
 
-        if(shark.energy > SHARK_STARVE) {
+        if(shark.energy < 0) {
           setOcean(x2, y2);
         } else {
           setCell(x2, y2, shark);
         }
       } else {
           // Sharks still starve if they don't move
-          if(shark.energy < SHARK_STARVE) {
-            setCell(x, y, shark);
+          if(shark.energy < 0) {
+            setOcean(x, y);
+          } else {
+            setCell(x2, y2, shark);
           }
       }
 }
@@ -223,7 +229,7 @@ void draw() {
       window.draw(display[i][k]);
     }
   }
-  sf::sleep(sf::seconds(1));
+  sf::sleep(sf::seconds(2));
   window.display();
 }
 
@@ -258,9 +264,15 @@ void initialize() {
       display[i][k].setSize(sf::Vector2f(cellXSize,cellYSize));
       display[i][k].setPosition(i*cellXSize,k*cellYSize);
       int id=i*1-+k;
-      if(id%9==0) {
+    //  if(id%9==0) {
+      // i == COLUMNS - 1
+      // k == ROWS - 1
+      // k == 0? <--- O
+      // - 1 issue
+      if(i == 6 && k == 0) {
         setShark(i, k);
       }
+      //else if(i == 0 && k == 6) {
       else if (id%6==0) { 
         setFish(i, k);
       }
@@ -278,12 +290,16 @@ int main()
   initialize();
   setColors();
   draw();
+  int generation = 0;
   while (window.isOpen())
   {
     poll();
     
-    
-    auto start = std::chrono::steady_clock::now();
+    printf("Generation %d\n", generation);
+    generation++;
+
+   
+    // auto start = std::chrono::steady_clock::now();
   //   #pragma omp parallel for
     for(int y = 0; y < ROWS - 1; ++y) {
       for(int x = 0; x < COLUMNS - 1; ++x) {
@@ -301,14 +317,14 @@ int main()
         }
       }
     }
-    auto end = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    printf("Duration: %ld\n", duration);
+    // auto end = std::chrono::steady_clock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    // printf("Duration: %ld\n", duration);
 
     clearMoves();
     setColors();
     draw();
-    countFish();
+  //  countFish();
   }
     
     return 0;
