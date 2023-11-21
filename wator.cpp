@@ -141,6 +141,7 @@ void setNeighbours(int x, int y, Cell list[]) {
      }
     }
 
+// Sharks should starve even if they don't move
 void moveShark(int x, int y) {
       Cell shark = getCell(x, y);
       Cell neighbours[4];
@@ -148,43 +149,56 @@ void moveShark(int x, int y) {
       int location = rand() % 4;
       shark.energy--;
       shark.turn++;
+      int x2, y2;
+
+      // Hunting Fish
       for(int i = 0; i < 4; i++) {
-        int x2 = neighbours[location].x;
-        int y2 = neighbours[location].y;
+        x2 = neighbours[location].x;
+        y2 = neighbours[location].y;
         if(isFish(x2, y2)) {
           shark.hasMoved = true;
           shark.energy += SHARK_ENERGY_GAIN;
           setOcean(x, y);
-          if(shark.turn >= SHARK_BREED) {
-            shark.turn = 0;
-            setShark(x, y);
-          }
-          if(shark.energy < SHARK_STARVE) {
-            setOcean(x2, y2);
-          }
+          setCell(x2, y2, shark);
           break;
         }
         if(!shark.hasMoved) { location = (location + 1) % 4;}
       }
-      if(shark.hasMoved) { return; }
-      for(int i = 0; i < 4; ++i) {
-        int x2 = neighbours[location].x;
-        int y2 = neighbours[location].y;
-        if(isOcean(x2, y2)) {
-          shark.hasMoved = true;
-          setOcean(x, y);
-          if(shark.turn >= SHARK_BREED) {
-            shark.turn = 0;
-            setShark(x, y);
-          }
-          if(shark.energy < SHARK_STARVE) {
-            setOcean(x2, y2);
-          }
-          break;
+
+      // No fish found
+      // Finding free space to move
+      if(shark.hasMoved) {
+          for(int i = 0; i < 4; ++i) {
+            int x2 = neighbours[location].x;
+            int y2 = neighbours[location].y;
+            if(isOcean(x2, y2)) {
+              shark.hasMoved = true;
+              setOcean(x, y);
+              break;
+            }
+          if(!shark.hasMoved) { location = (location + 1) % 4;}
         }
-      if(!shark.hasMoved) { location = (location + 1) % 4;}
       }
-    }
+
+      if(shark.hasMoved) {
+        if(shark.turn >= SHARK_BREED) {
+          shark.turn = 0;
+          setShark(x, y);
+        }
+
+        if(shark.energy > SHARK_STARVE) {
+          setOcean(x2, y2);
+        } else {
+          setCell(x2, y2, shark);
+        }
+      } else {
+          // Sharks still starve if they don't move
+          if(shark.energy < SHARK_STARVE) {
+            setCell(x, y, shark);
+          }
+      }
+}
+
 
 void countFish() {
     int fishes = 0;
