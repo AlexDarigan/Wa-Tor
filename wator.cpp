@@ -68,6 +68,7 @@ sf::Color getFillColor(int x, int y) { return cells[x][y].color; }
 bool isOcean(int x, int y) { return cells[x][y].celltype == CellType::Ocean; };
 bool isFish(int x, int y) { return cells[x][y].celltype == CellType::Fish; };
 bool isShark(int x, int y) { return cells[x][y].celltype == CellType::Shark; };
+bool hasMoved(int x, int y) { return cells[x][y].hasMoved; }
 
 // Spawn Methods
 void setOcean(int x, int y) { 
@@ -269,26 +270,23 @@ int main()
     
     
     auto start = std::chrono::steady_clock::now();
-  //   //Move Fish
   //   #pragma omp parallel for
     for(int y = 0; y < ROWS - 1; ++y) {
       for(int x = 0; x < COLUMNS - 1; ++x) {
-        if(isFish(x, y) && !cells[x][y].hasMoved) {
-          //cells[x][y].moveFish(x, y);
+        if(isFish(x, y) && !hasMoved(x,y)) {
           moveFish(x, y);
         }
       }
     }
     
-    // Move Shark
  //   #pragma omp parallel for
-    // for(int y = 0; y < ROWS - 1; ++y) {
-    //   for(int x = 0; x < COLUMNS - 1; ++x) {
-    //     if(isShark(x, y) && !cells[x][y].hasMoved) {
-    //       moveShark(x, y);
-    //     }
-    //   }
-    // }
+    for(int y = 0; y < ROWS - 1; ++y) {
+      for(int x = 0; x < COLUMNS - 1; ++x) {
+        if(isShark(x, y) && !hasMoved(x, y)) {
+          moveShark(x, y);
+        }
+      }
+    }
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     printf("Duration: %ld\n", duration);
