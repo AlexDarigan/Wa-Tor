@@ -29,11 +29,11 @@
 #include <iostream>
 #include <omp.h>
 
-const int ROWS = 600;//600;
-const int COLUMNS = 600; //600;
+const int ROWS = 600;
+const int COLUMNS = 600;
 const int NUM_FISH = -1;
 const int NUM_SHARK = -1;
-const int FISH_BREED = 3;
+const int FISH_BREED = 1;
 const int SHARK_BREED = 6;
 const int SHARK_STARVE = 2;
 const int SHARK_ENERGY_GAIN = 1;
@@ -144,6 +144,7 @@ void moveFish(int x, int y) {
 void moveShark(int x, int y) {
       Cell shark = getCell(x, y);
       Cell neighbours[4];
+      printf("Energy %d\n",shark.energy);
       setNeighbours(x, y, neighbours);
       int location = rand() % 4;
       shark.energy--;
@@ -258,7 +259,7 @@ void initialize() {
       display[y][x].setPosition(x * cellXSize,y * cellYSize);
       setOcean(x, y);
       int id=y * 1 -+ x;
-      if(id%9==0) {
+      if(id%18==0) {
         setShark(x, y);
       }
       else if ( id % 6 == 0) { 
@@ -271,8 +272,69 @@ void initialize() {
   }
 }
 
-const int NUM_THREADS = 3;
+const int NUM_THREADS = 1;
+const int CHUNK_SIZE = ROWS / NUM_THREADS;
 
+void move(int y) {
+  for (int x = 0; x < COLUMNS; ++x) { 
+    if(isFish(x, y) && !hasMoved(x,y)) {
+      moveFish(x, y);
+    } else if(isShark(x, y) && !hasMoved(x, y))
+    moveShark(x, y);
+  }
+}
+
+void sequential() {
+  for(int y = 0; y < ROWS; ++y) {
+    for (int x = 0; x < COLUMNS; ++x) { 
+      if(isFish(x, y) && !hasMoved(x,y)) {
+          moveFish(x, y);
+        } else if(isShark(x, y) && !hasMoved(x, y))
+        moveShark(x, y);
+      }
+  }
+}
+
+// void parallel() {
+//   for(int y = 0; y < ROWS; ++y) { // 0-200?
+//     for (int x = 0; x < COLUMNS; ++x) { 
+//         if(isFish(x, y) && !hasMoved(x,y)) {
+//             moveFish(x, y);
+//           } else if(isShark(x, y) && !hasMoved(x, y))
+//           moveShark(x, y);
+//         }
+//     }
+//   sf::sleep(sf::seconds(1));
+// }
+      
+    // #pragma omp parallel
+    // {
+
+    //   // 0 1 2 3 4 5,  
+    //   // 0 1 2 3 4 5,
+    //   // 0 1 2 3 4 5,
+    //   // 0 1 2 3 4 5,
+    //   // 0 1 2 3 4 5,
+    //   // 0 1 2 3 4 5,
+    //   // ---------------- 0, 0 OR 5,5    
+    //   // int start = CHUNK_SIZE * omp_get_thread_num();
+    //   // int end = start + CHUNK_SIZE;
+    //   // #pragma omp for //collapse(2)
+    //   for(int y = 0; y < ROWS; ++y) { // 0-200?
+    //     for (int x = 0; x < COLUMNS; ++x) { 
+    //         // if(x == 0) { 
+    //         //   // printf("Thread: %d - (%d,%d)\n", omp_get_thread_num(), x, y);
+    //         //   printf("start: %d ,end %d, chunkSize %d, threadNum %d\n", start, end, CHUNK_SIZE, omp_get_thread_num());
+    //         // }
+    //         //printf("start: %d ,end %d, chunkSize %d, threadNum %d\n", start, end, CHUNK_SIZE, omp_get_thread_num());
+    //         if(isFish(x, y) && !hasMoved(x,y)) {
+    //             moveFish(x, y);
+    //          } else if(isShark(x, y) && !hasMoved(x, y))
+    //           moveShark(x, y);
+    //         }
+    //     }
+    //   }
+    // return 0;
 
 int main()
 {
@@ -286,36 +348,9 @@ int main()
   {
     poll();
     auto start = std::chrono::steady_clock::now();
-    #pragma omp parallel
-    {
-      int chunkSize = ROWS / omp_get_num_threads();
-      int start = chunkSize * omp_get_thread_num();
-      int end = start + chunkSize;
-    //  #pragma omp parallel for collapse(2)
-      for (int y = start + 1; y < end - 1; ++y) {
-        for (int x = 0; x < COLUMNS; ++x) { 
-             if(isFish(x, y) && !hasMoved(x,y)) {
-              moveFish(x, y);
-            }
-            else if(isShark(x, y) && !hasMoved(x, y)) {
-              moveShark(x, y);
-            }
-          }
-        }
-
-
-    //   #pragma omp parallel for collapse(2)
-    //   for(int y = start ;y < end ; ++y) {
-    //     for(int x = 0; x < COLUMNS; ++x) {
-    //         if(isFish(x, y) && !hasMoved(x,y)) {
-    //           moveFish(x, y);
-    //         }
-    //         else if(isShark(x, y) && !hasMoved(x, y)) {
-    //           moveShark(x, y);
-    //         }
-    //     }
-    //   }
-    }
+    sequential(); // Sequential Update Loop
+    //parallel(); // Parallel Update Loop
+    //sf::sleep(sf::seconds(1));
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     printf("Generation %d Duration: %ld\n", generation, duration);
@@ -324,8 +359,6 @@ int main()
     clearMoves();
     setColors();
     draw();
-  //  countFish();
   }
-    
-    return 0;
+  return 0;
 }
