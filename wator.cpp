@@ -28,6 +28,7 @@
 #include <cstdlib> 
 #include <iostream>
 #include <omp.h>
+#include "Semaphore.h"
 
 const int ROWS = 600;
 const int COLUMNS = 600;
@@ -62,6 +63,8 @@ struct Cell {
 sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
 sf::RectangleShape display[ROWS][COLUMNS];
 Cell cells[ROWS][COLUMNS];
+const int MAX_LOCK = 20;
+Semaphore locks[MAX_LOCK];
 
 sf::Color getFillColor(int x, int y) { return cells[y][x].color; }
 bool isOcean(int x, int y) { return cells[y][x].celltype == CellType::Ocean; };
@@ -222,7 +225,6 @@ void draw() {
       window.draw(display[y][x]);
     }
   }
- // sf::sleep(sf::seconds(2));
   window.display();
 }
 
@@ -297,16 +299,32 @@ void sequential() {
 void parallel() {
   #pragma omp parallel 
   {
+    int id = omp_get_thread_num();
     int CHUNK_SIZE = ROWS / omp_get_num_threads();
     int start = CHUNK_SIZE * omp_get_thread_num();
     int end = start + CHUNK_SIZE;
     if(end > ROWS) {
       end = ROWS;
     }
-    for(int y = start; y < end; ++y) {  
-      for(int x = 0; x < COLUMNS; ++x) {
-        move(x, y);
+    for(int y = start; y < end; ++y) {
+      if(y == start) {
+        locks[id].Wait();
+        for(int x = 0; x < COLUMNS; ++x) {
+          move(x, y);
+        }
+        locks[id].Signal();
+      } else if(y == (end - 1)) {
+        locks[(id + 1) % omp_get_num_threads()].Wait();
+        for(int x = 0; x < COLUMNS; ++x) {
+          move(x, y);
+        }
+        locks[(id + 1) % omp_get_num_threads()].Signal();
       }
+
+      //}
+      // for(int x = 0; x < COLUMNS; ++x) {
+      //   move(x, y);
+      // }
     }
   }
 }
@@ -314,6 +332,9 @@ void parallel() {
 int main()
 {
   srand(0);
+  for(int i = 0; i < MAX_LOCK; ++i) {
+    locks[i].Signal(); // Init Lock to 1 so it will pass through first
+  }
 //  omp_set_num_threads(NUM_THREADS);
   // omp_set_num_threads(4);
   initialize();
