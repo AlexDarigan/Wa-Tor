@@ -29,6 +29,8 @@
 #include <iostream>
 #include <omp.h>
 #include "Semaphore.h"
+#include <stdlib.h>
+
 
 const int ROWS = 600;
 const int COLUMNS = 600;
@@ -65,6 +67,8 @@ sf::RectangleShape display[ROWS][COLUMNS];
 Cell cells[ROWS][COLUMNS];
 const int MAX_LOCK = 20;
 Semaphore locks[MAX_LOCK];
+const int MAX_THREADS = 8;
+drand48_data DecisionData[MAX_THREADS];
 
 sf::Color getFillColor(int x, int y) { return cells[y][x].color; }
 bool isOcean(int x, int y) { return cells[y][x].celltype == CellType::Ocean; };
@@ -124,7 +128,10 @@ void moveFish(int x, int y) {
   Cell fish = getCell(x, y);
   Cell neighbours[4];
   setNeighbours(x, y, neighbours);
-  int location = rand() % 4;
+  // int location = srand() % 4;
+  long location;
+  lrand48_r(&DecisionData[omp_get_thread_num()], &location);
+  location = location % 4;
   for(int i = 0; i < 4; i++) {
     int x2 = neighbours[location].x;
     int y2 = neighbours[location].y;
@@ -148,7 +155,10 @@ void moveShark(int x, int y) {
       Cell shark = getCell(x, y);
       Cell neighbours[4];
       setNeighbours(x, y, neighbours);
-      int location = rand() % 4;
+      // int location = rand() % 4;
+      long location;
+      lrand48_r(&DecisionData[omp_get_thread_num()], &location);
+      location = location % 4;
       shark.energy--;
       shark.turn++;
       int x2, y2;
@@ -279,9 +289,10 @@ const int CHUNK_SIZE = ROWS / NUM_THREADS;
 void move(int x, int y) {
   // for (int x = 0; x < COLUMNS; ++x) { 
     if(isFish(x, y) && !hasMoved(x,y)) {
-      moveFish(x, y);
-    } else if(isShark(x, y) && !hasMoved(x, y)) {
-    moveShark(x, y);
+     moveFish(x, y);
+    } 
+    else if(isShark(x, y) && !hasMoved(x, y)) {
+      moveShark(x, y);
   }
 }
 
@@ -330,9 +341,13 @@ void parallel() {
 
 int main()
 {
-  srand(0);
+  srand48(0);
   for(int i = 0; i < MAX_LOCK; ++i) {
     locks[i].Signal(); // Init Lock to 1 so it will pass through first
+  }
+  for(int i = 0; i < MAX_THREADS; ++i) {
+    // Seeding randomness per thread
+    srand48_r(0, &DecisionData[i]);
   }
 //  omp_set_num_threads(NUM_THREADS);
   // omp_set_num_threads(4);
