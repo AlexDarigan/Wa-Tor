@@ -144,7 +144,6 @@ void moveFish(int x, int y) {
 void moveShark(int x, int y) {
       Cell shark = getCell(x, y);
       Cell neighbours[4];
-      printf("Energy %d\n",shark.energy);
       setNeighbours(x, y, neighbours);
       int location = rand() % 4;
       shark.energy--;
