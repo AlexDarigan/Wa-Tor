@@ -319,12 +319,11 @@ void parallel() {
           move(x, y);
         }
         locks[(id + 1) % omp_get_num_threads()].Signal();
+      } else {
+        for(int x = 0; x < COLUMNS; ++x) {
+          move(x, y);
+        }
       }
-
-      //}
-      // for(int x = 0; x < COLUMNS; ++x) {
-      //   move(x, y);
-      // }
     }
   }
 }
@@ -345,7 +344,7 @@ int main()
   {
     poll();
     auto start = std::chrono::steady_clock::now();
-    //sequential(); // Sequential Update Loop, about 40-60
+   // sequential(); // Sequential Update Loop, about 40-60
     parallel(); // Parallel Update Loop
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
