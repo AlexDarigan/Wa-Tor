@@ -297,7 +297,13 @@ void sequential() {
 void parallel() {
   #pragma omp parallel 
   {
-    for(int y = 0; y < ROWS; ++y) {  
+    int CHUNK_SIZE = ROWS / omp_get_num_threads();
+    int start = CHUNK_SIZE * omp_get_thread_num();
+    int end = start + CHUNK_SIZE;
+    if(end > ROWS) {
+      end = ROWS;
+    }
+    for(int y = start; y < end; ++y) {  
       for(int x = 0; x < COLUMNS; ++x) {
         move(x, y);
       }
@@ -308,7 +314,8 @@ void parallel() {
 int main()
 {
   srand(0);
- // omp_set_num_threads(NUM_THREADS);
+//  omp_set_num_threads(NUM_THREADS);
+  // omp_set_num_threads(4);
   initialize();
   setColors();
   draw();
@@ -317,7 +324,7 @@ int main()
   {
     poll();
     auto start = std::chrono::steady_clock::now();
-    //sequential(); // Sequential Update Loop
+    //sequential(); // Sequential Update Loop, about 40-60
     parallel(); // Parallel Update Loop
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
