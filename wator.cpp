@@ -274,11 +274,11 @@ void initialize() {
 const int NUM_THREADS = 1;
 const int CHUNK_SIZE = ROWS / NUM_THREADS;
 
-void move(int y) {
-  for (int x = 0; x < COLUMNS; ++x) { 
+void move(int x, int y) {
+  // for (int x = 0; x < COLUMNS; ++x) { 
     if(isFish(x, y) && !hasMoved(x,y)) {
       moveFish(x, y);
-    } else if(isShark(x, y) && !hasMoved(x, y))
+    } else if(isShark(x, y) && !hasMoved(x, y)) {
     moveShark(x, y);
   }
 }
@@ -294,51 +294,21 @@ void sequential() {
   }
 }
 
-// void parallel() {
-//   for(int y = 0; y < ROWS; ++y) { // 0-200?
-//     for (int x = 0; x < COLUMNS; ++x) { 
-//         if(isFish(x, y) && !hasMoved(x,y)) {
-//             moveFish(x, y);
-//           } else if(isShark(x, y) && !hasMoved(x, y))
-//           moveShark(x, y);
-//         }
-//     }
-//   sf::sleep(sf::seconds(1));
-// }
-      
-    // #pragma omp parallel
-    // {
-
-    //   // 0 1 2 3 4 5,  
-    //   // 0 1 2 3 4 5,
-    //   // 0 1 2 3 4 5,
-    //   // 0 1 2 3 4 5,
-    //   // 0 1 2 3 4 5,
-    //   // 0 1 2 3 4 5,
-    //   // ---------------- 0, 0 OR 5,5    
-    //   // int start = CHUNK_SIZE * omp_get_thread_num();
-    //   // int end = start + CHUNK_SIZE;
-    //   // #pragma omp for //collapse(2)
-    //   for(int y = 0; y < ROWS; ++y) { // 0-200?
-    //     for (int x = 0; x < COLUMNS; ++x) { 
-    //         // if(x == 0) { 
-    //         //   // printf("Thread: %d - (%d,%d)\n", omp_get_thread_num(), x, y);
-    //         //   printf("start: %d ,end %d, chunkSize %d, threadNum %d\n", start, end, CHUNK_SIZE, omp_get_thread_num());
-    //         // }
-    //         //printf("start: %d ,end %d, chunkSize %d, threadNum %d\n", start, end, CHUNK_SIZE, omp_get_thread_num());
-    //         if(isFish(x, y) && !hasMoved(x,y)) {
-    //             moveFish(x, y);
-    //          } else if(isShark(x, y) && !hasMoved(x, y))
-    //           moveShark(x, y);
-    //         }
-    //     }
-    //   }
-    // return 0;
+void parallel() {
+  #pragma omp parallel 
+  {
+    for(int y = 0; y < ROWS; ++y) {  
+      for(int x = 0; x < COLUMNS; ++x) {
+        move(x, y);
+      }
+    }
+  }
+}
 
 int main()
 {
   srand(0);
-  omp_set_num_threads(NUM_THREADS);
+ // omp_set_num_threads(NUM_THREADS);
   initialize();
   setColors();
   draw();
@@ -347,9 +317,8 @@ int main()
   {
     poll();
     auto start = std::chrono::steady_clock::now();
-    sequential(); // Sequential Update Loop
-    //parallel(); // Parallel Update Loop
-    //sf::sleep(sf::seconds(1));
+    //sequential(); // Sequential Update Loop
+    parallel(); // Parallel Update Loop
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     printf("Generation %d Duration: %ld\n", generation, duration);
