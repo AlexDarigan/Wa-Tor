@@ -29,7 +29,6 @@
 #include <iostream>
 #include <omp.h>
 #include "Semaphore.h"
-#include <stdlib.h>
 
 
 const int ROWS = 600;
