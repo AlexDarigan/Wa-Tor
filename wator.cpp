@@ -35,7 +35,7 @@
 const int MAX_LOCK = 20;
 const int MAX_DURATIONS = 1000;
 const int MAX_THREADS = 8;
-const int NUM_THREADS = 1;
+const int NUM_THREADS = 8;
 const int ROWS = 600;
 const int COLUMNS = 600;
 const int NUM_FISH = -1;
