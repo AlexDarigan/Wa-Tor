@@ -28,9 +28,14 @@
 #include <cstdlib> 
 #include <iostream>
 #include <omp.h>
+#include <iostream>
+#include <fstream>
 #include "Semaphore.h"
 
-
+const int MAX_LOCK = 20;
+const int MAX_DURATIONS = 1000;
+const int MAX_THREADS = 8;
+const int NUM_THREADS = 1;
 const int ROWS = 600;
 const int COLUMNS = 600;
 const int NUM_FISH = -1;
@@ -59,15 +64,12 @@ struct Cell {
     bool hasMoved = false;
 };
 
-
-
 sf::RenderWindow window(sf::VideoMode(WindowXSize,WindowYSize), "SFML Wa-Tor world");
 sf::RectangleShape display[ROWS][COLUMNS];
 Cell cells[ROWS][COLUMNS];
-const int MAX_LOCK = 20;
 Semaphore locks[MAX_LOCK];
-const int MAX_THREADS = 8;
 drand48_data DecisionData[MAX_THREADS];
+int durations[MAX_DURATIONS];
 
 sf::Color getFillColor(int x, int y) { return cells[y][x].color; }
 bool isOcean(int x, int y) { return cells[y][x].celltype == CellType::Ocean; };
@@ -208,49 +210,6 @@ void moveShark(int x, int y) {
       }
 }
 
-
-void countFish() {
-    int fishes = 0;
-    int shark = 0;
-    for(int y = 0; y < ROWS; ++y) {
-      for(int x = 0; x < COLUMNS; ++x) {
-        if(isFish(x, y)) {
-          fishes++;
-        } else if(isShark(x, y)) {
-          shark++;
-        }
-      }
-    }
-    printf("Fishes: %d\nSharks: %d\n", fishes, shark);
-  }
-
-
-void draw() {
-  window.clear(sf::Color::Black);
-  for(int y = 0; y < ROWS; ++y){
-    for(int x = 0; x < COLUMNS; ++x){
-      window.draw(display[y][x]);
-    }
-  }
-  window.display();
-}
-
-void clearMoves() {
-  for(int y = 0; y < ROWS; ++y) {
-    for(int x = 0; x < COLUMNS; ++x) {
-      cells[x][y].hasMoved = false;
-    }
-  }
-}
-
-void setColors() {
-  for(int y = 0; y < ROWS; ++y) {
-    for(int x = 0; x < COLUMNS; ++x) {
-      display[y][x].setFillColor(getFillColor(x, y));
-    }
-  }
-}
-
 void poll() {
   sf::Event event;
   while (window.pollEvent(event))
@@ -260,7 +219,21 @@ void poll() {
   }
 }
 
+void draw() {
+  window.clear(sf::Color::Black);
+  for(int y = 0; y < ROWS; ++y) {
+    for(int x = 0; x < COLUMNS; ++x) {
+      window.draw(display[y][x]);
+    }
+  }
+  window.display();
+}
+
 void initialize() {
+  srand48(0);
+  omp_set_num_threads(NUM_THREADS);
+  for(int i = 0; i < MAX_LOCK; ++i) { locks[i].Signal(); }
+  for(int i = 0; i < MAX_THREADS; ++i) { srand48_r(0, &DecisionData[i]); }
   for(int y = 0; y < ROWS; ++y){
     for(int x = 0; x < COLUMNS; ++x){
       display[y][x].setSize(sf::Vector2f(cellXSize,cellYSize));
@@ -270,21 +243,17 @@ void initialize() {
       if(id%18==0) {
         setShark(x, y);
       }
-      else if ( id % 6 == 0) { 
+      else if ( id % 10 == 0) { 
         setFish(x, y);
       }
-      // if(y == 5 && x == 9) {
-      //   setFish(x, y);
-      // }
+      display[y][x].setFillColor(getFillColor(x, y));
     }
   }
+  draw();
 }
 
-const int NUM_THREADS = 1;
-const int CHUNK_SIZE = ROWS / NUM_THREADS;
 
 void move(int x, int y) {
-  // for (int x = 0; x < COLUMNS; ++x) { 
     if(isFish(x, y) && !hasMoved(x,y)) {
      moveFish(x, y);
     } 
@@ -293,20 +262,8 @@ void move(int x, int y) {
   }
 }
 
-void sequential() {
-  for(int y = 0; y < ROWS; ++y) {
-    for (int x = 0; x < COLUMNS; ++x) { 
-      if(isFish(x, y) && !hasMoved(x,y)) {
-          moveFish(x, y);
-        } else if(isShark(x, y) && !hasMoved(x, y))
-        moveShark(x, y);
-      }
-  }
-}
-
-void parallel() {
-  #pragma omp parallel 
-  {
+void move() {
+    // printf("Thread %d\n", omp_get_thread_num());
     int id = omp_get_thread_num();
     int CHUNK_SIZE = ROWS / omp_get_num_threads();
     int start = CHUNK_SIZE * omp_get_thread_num();
@@ -319,54 +276,67 @@ void parallel() {
         locks[id].Wait();
         for(int x = 0; x < COLUMNS; ++x) {
           move(x, y);
+          display[y][x].setFillColor(getFillColor(x, y));
         }
         locks[id].Signal();
       } else if(y == (end - 1)) {
         locks[(id + 1) % omp_get_num_threads()].Wait();
         for(int x = 0; x < COLUMNS; ++x) {
           move(x, y);
+          display[y][x].setFillColor(getFillColor(x, y));
         }
         locks[(id + 1) % omp_get_num_threads()].Signal();
       } else {
         for(int x = 0; x < COLUMNS; ++x) {
           move(x, y);
+          display[y][x].setFillColor(getFillColor(x, y));
         }
       }
-    }
   }
+}
+
+
+void writeToFile() {
+  std::ofstream file;
+  file.open("threads.txt");
+  for(int i = 0; i < MAX_DURATIONS; ++i) {
+    file << durations[i] << ",";
+  }
+  file << "\n";
+  file.close();
 }
 
 int main()
 {
-  //srand48(0);
-  srand(0);
-  for(int i = 0; i < MAX_LOCK; ++i) {
-    locks[i].Signal(); // Init Lock to 1 so it will pass through first
-  }
-  for(int i = 0; i < MAX_THREADS; ++i) {
-    // Seeding randomness per thread
-    srand48_r(0, &DecisionData[i]);
-  }
-//  omp_set_num_threads(NUM_THREADS);
-  // omp_set_num_threads(4);
   initialize();
-  setColors();
-  draw();
   int generation = 0;
-  while (window.isOpen())
+  while (window.isOpen() && generation < MAX_DURATIONS)
   {
-    poll();
+
+    poll();    
     auto start = std::chrono::steady_clock::now();
-    //sequential(); // Sequential Update Loop, about 40-60
-    parallel(); // Parallel Update Loop
+    #pragma omp parallel 
+    {
+      move();
+
+      #pragma omp for collapse(2)
+      for(int y = 0; y < ROWS; ++y) {
+        for(int x = 0; x < COLUMNS; ++x) {
+          cells[x][y].hasMoved = false;
+        }
+      }
+
+      
+    }
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    printf("Generation %d Duration: %ld\n", generation, duration);
-    generation++;
-
-    clearMoves();
-    setColors();
+    // Draw takes about 5x more than anything else and can't be called from multiple threads consistently
     draw();
+    printf("Generation %d Duration: %ld\n", generation, duration);
+    durations[generation] = duration;
+    generation++;
   }
+
+  writeToFile();
   return 0;
 }
