@@ -2,7 +2,7 @@
 // 
 // Filename: wator.cpp
 // Description: 
-// Author: David Darigan
+// Author: Joseph Kehoe
 // Maintainer: David Darigan
 // Created: Fri Nov  9
 
@@ -22,6 +22,17 @@
 // along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 // 
 // Code:
+
+/*! \file Wa-Tor File
+    \brief Code to implement the Wa-Tor (https://en.wikipedia.org/wiki/Wa-Tor) simulation concurrently using
+    SFML for graphics and OpenMP for concurrency
+*/
+
+/*! \fn Wa-Tor File
+    \brief A Function
+*/
+
+
 
 #include <chrono>
 #include <SFML/Graphics.hpp>
@@ -71,13 +82,39 @@ Semaphore locks[MAX_LOCK];
 drand48_data DecisionData[MAX_THREADS];
 int durations[MAX_DURATIONS];
 
+
+/*! \fn getFillColor
+    \brief A Function
+*/
 sf::Color getFillColor(int x, int y) { return cells[y][x].color; }
+
+
+/*! \fn isOcean
+    \brief A Function
+*/
 bool isOcean(int x, int y) { return cells[y][x].celltype == CellType::Ocean; };
+
+
+/*! \fn isFish
+    \brief A Function
+*/
 bool isFish(int x, int y) { return cells[y][x].celltype == CellType::Fish; };
+
+
+/*! \fn isShark
+    \brief A Function
+*/
 bool isShark(int x, int y) { return cells[y][x].celltype == CellType::Shark; };
+
+
+/*! \fn hasMoved
+    \brief A Function
+*/
 bool hasMoved(int x, int y) { return cells[y][x].hasMoved; }
 
-// Spawn Methods
+/*! \fn setOcean
+    \brief A Function
+*/
 void setOcean(int x, int y) { 
   Cell cell;
   cell.celltype = CellType::Ocean;
@@ -85,6 +122,10 @@ void setOcean(int x, int y) {
   setCell(x, y, cell);
 }
 
+
+/*! \fn setFish
+    \brief A Function
+*/
 void setFish(int x, int y) { 
   Cell cell;
   cell.celltype = CellType::Fish;
@@ -94,6 +135,11 @@ void setFish(int x, int y) {
   setCell(x, y, cell);
 }
 
+
+
+/*! \fn setShark
+    \brief A Function
+*/
 void setShark(int x, int y) { 
   Cell cell;
   cell.celltype = CellType::Shark;
@@ -104,16 +150,28 @@ void setShark(int x, int y) {
   setCell(x, y, cell);
 }
 
+
+/*! \fn getCell
+    \brief A Function
+*/
 Cell getCell(int x, int y) {
   return cells[y][x];
 }
 
+
+/*! \fn setCell
+    \brief A Function
+*/
 void setCell(int x, int y, Cell cell) {
   cell.x = x;
   cell.y = y;
   cells[y][x] = cell;
 }
 
+
+/*! \fn setNeighbours
+    \brief A Function
+*/
 void setNeighbours(int x, int y, Cell list[]) {
   int north = ((y - 1) + ROWS) % ROWS;
   int south = (y + 1) % ROWS; // no braces cause segfault
@@ -125,6 +183,10 @@ void setNeighbours(int x, int y, Cell list[]) {
   list[3] = getCell(west, y);
 }
 
+
+/*! \fn moveFish
+    \brief A Function
+*/
 void moveFish(int x, int y) { 
   Cell fish = getCell(x, y);
   Cell neighbours[4];
@@ -150,7 +212,10 @@ void moveFish(int x, int y) {
   }
 }
 
-// Sharks should starve even if they don't move
+
+/*! \fn moveShark
+    \brief A Function
+*/
 void moveShark(int x, int y) {
       Cell shark = getCell(x, y);
       Cell neighbours[4];
@@ -210,6 +275,10 @@ void moveShark(int x, int y) {
       }
 }
 
+
+/*! \fn poll
+    \brief A Function
+*/
 void poll() {
   sf::Event event;
   while (window.pollEvent(event))
@@ -219,6 +288,10 @@ void poll() {
   }
 }
 
+
+/*! \fn draw
+    \brief A Function
+*/
 void draw() {
   window.clear(sf::Color::Black);
   for(int y = 0; y < ROWS; ++y) {
@@ -229,6 +302,10 @@ void draw() {
   window.display();
 }
 
+
+/*! \fn initialize
+    \brief A Function
+*/
 void initialize() {
   srand48(0);
   omp_set_num_threads(NUM_THREADS);
@@ -253,6 +330,9 @@ void initialize() {
 }
 
 
+/*! \fn move
+    \brief A Function
+*/
 void move(int x, int y) {
     if(isFish(x, y) && !hasMoved(x,y)) {
      moveFish(x, y);
@@ -262,6 +342,10 @@ void move(int x, int y) {
   }
 }
 
+
+/*! \fn move
+    \brief A Function
+*/
 void move() {
     // printf("Thread %d\n", omp_get_thread_num());
     int id = omp_get_thread_num();
@@ -296,6 +380,9 @@ void move() {
 }
 
 
+/*! \fn writeToFile
+    \brief A Function
+*/
 void writeToFile() {
   std::ofstream file;
   file.open("threads.txt");
@@ -306,6 +393,10 @@ void writeToFile() {
   file.close();
 }
 
+
+/*! \fn main
+    \brief A Function
+*/
 int main()
 {
   initialize();
