@@ -46,7 +46,7 @@
 const int MAX_LOCK = 20;
 const int MAX_DURATIONS = 1000;
 const int MAX_THREADS = 8;
-const int NUM_THREADS = 8;
+const int NUM_THREADS = 4;
 const int ROWS = 600;
 const int COLUMNS = 600;
 const int NUM_FISH = -1;
@@ -84,36 +84,53 @@ int durations[MAX_DURATIONS];
 
 
 /*! \fn getFillColor
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \brief Returns the fill color for the cell type (Ocean - Blue, Fish - Green & Shark - Red) at the x, y coordinates
 */
 sf::Color getFillColor(int x, int y) { return cells[y][x].color; }
 
 
 /*! \fn isOcean
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \return bool
+    \brief Returns true if the cell at the x,y co-ordinates is an Ocean
 */
 bool isOcean(int x, int y) { return cells[y][x].celltype == CellType::Ocean; };
 
 
 /*! \fn isFish
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \return bool
+    \brief Returns true if the cell at the x,y co-ordinates is a Fish
     \brief A Function
 */
 bool isFish(int x, int y) { return cells[y][x].celltype == CellType::Fish; };
 
 
 /*! \fn isShark
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \return bool
+    \brief Returns true if the cell at the x,y co-ordinates is a Shark
 */
 bool isShark(int x, int y) { return cells[y][x].celltype == CellType::Shark; };
 
 
 /*! \fn hasMoved
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \return bool
+    \brief Returns true if the cell has already move during the current game loop
 */
 bool hasMoved(int x, int y) { return cells[y][x].hasMoved; }
 
 /*! \fn setOcean
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \brief Sets the cell at the x, y co-ordinates as an Ocean Cell
 */
 void setOcean(int x, int y) { 
   Cell cell;
@@ -124,7 +141,9 @@ void setOcean(int x, int y) {
 
 
 /*! \fn setFish
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \brief Sets the cell at the x, y co-ordinates as a Fish Cell
 */
 void setFish(int x, int y) { 
   Cell cell;
@@ -135,10 +154,10 @@ void setFish(int x, int y) {
   setCell(x, y, cell);
 }
 
-
-
 /*! \fn setShark
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \brief Set's the cell at the x, y co-ordinates as a Shark Cell
 */
 void setShark(int x, int y) { 
   Cell cell;
@@ -152,7 +171,10 @@ void setShark(int x, int y) {
 
 
 /*! \fn getCell
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \return Cell
+    \brief Returns a value-copy of the Cell located at the x, y coordinates
 */
 Cell getCell(int x, int y) {
   return cells[y][x];
@@ -160,7 +182,10 @@ Cell getCell(int x, int y) {
 
 
 /*! \fn setCell
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \param Cell
+    \brief Sets the cell at the x, y co-ordinates as a value copy of the Cell cell parameter
 */
 void setCell(int x, int y, Cell cell) {
   cell.x = x;
@@ -170,7 +195,10 @@ void setCell(int x, int y, Cell cell) {
 
 
 /*! \fn setNeighbours
-    \brief A Function
+    \param x - The x co-ordinate of the center cell
+    \param y - The y co-ordinate of the center cell
+    \param [out] Cell[] - A list to be populated with neighbours
+    \brief Populates Cell[] with the north, south, east and west neighbours of the Cell at the x, y co-ordinates
 */
 void setNeighbours(int x, int y, Cell list[]) {
   int north = ((y - 1) + ROWS) % ROWS;
@@ -185,7 +213,9 @@ void setNeighbours(int x, int y, Cell list[]) {
 
 
 /*! \fn moveFish
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \brief The function dedicated to moving the fish at the x, y co-ordinates
 */
 void moveFish(int x, int y) { 
   Cell fish = getCell(x, y);
@@ -214,7 +244,9 @@ void moveFish(int x, int y) {
 
 
 /*! \fn moveShark
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \brief The function dedicated to moving the Shark at the x, y co-ordinates
 */
 void moveShark(int x, int y) {
       Cell shark = getCell(x, y);
@@ -277,7 +309,7 @@ void moveShark(int x, int y) {
 
 
 /*! \fn poll
-    \brief A Function
+    \brief Wrapper function around SFML's poll event
 */
 void poll() {
   sf::Event event;
@@ -290,7 +322,7 @@ void poll() {
 
 
 /*! \fn draw
-    \brief A Function
+    \brief Wrapper function around SFML's drawing algorithm
 */
 void draw() {
   window.clear(sf::Color::Black);
@@ -304,7 +336,9 @@ void draw() {
 
 
 /*! \fn initialize
-    \brief A Function
+    \brief Function that initializes the game state, including seeding the random number generations, setting the
+    total number of threads, preparing the mutex locks and thread-safe random buffers, as well as building and drawing
+    the initial grid. It does a lot but it only does it once.
 */
 void initialize() {
   srand48(0);
@@ -331,7 +365,10 @@ void initialize() {
 
 
 /*! \fn move
-    \brief A Function
+    \param x - The x co-ordinate of the cell
+    \param y - The y co-ordinate of the cell
+    \brief Checks that the Cell at the x, y co-ordinate is a movable fish or shark (that hasn't moved this game loop)
+    and calls into their respective move functions
 */
 void move(int x, int y) {
     if(isFish(x, y) && !hasMoved(x,y)) {
@@ -344,10 +381,10 @@ void move(int x, int y) {
 
 
 /*! \fn move
-    \brief A Function
+    \brief Thread-safe move function that loops over the entire grid (split by the current number of threads) and calls into
+    the single-cell move function per cell.
 */
 void move() {
-    // printf("Thread %d\n", omp_get_thread_num());
     int id = omp_get_thread_num();
     int CHUNK_SIZE = ROWS / omp_get_num_threads();
     int start = CHUNK_SIZE * omp_get_thread_num();
@@ -381,7 +418,7 @@ void move() {
 
 
 /*! \fn writeToFile
-    \brief A Function
+    \brief A debugging function used to write duration per generations to a text file
 */
 void writeToFile() {
   std::ofstream file;
@@ -395,7 +432,7 @@ void writeToFile() {
 
 
 /*! \fn main
-    \brief A Function
+    \brief The main application entry point
 */
 int main()
 {
