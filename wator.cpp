@@ -128,7 +128,6 @@ void moveFish(int x, int y) {
   Cell fish = getCell(x, y);
   Cell neighbours[4];
   setNeighbours(x, y, neighbours);
-  // int location = srand() % 4;
   long location;
   lrand48_r(&DecisionData[omp_get_thread_num()], &location);
   location = location % 4;
@@ -155,7 +154,6 @@ void moveShark(int x, int y) {
       Cell shark = getCell(x, y);
       Cell neighbours[4];
       setNeighbours(x, y, neighbours);
-      // int location = rand() % 4;
       long location;
       lrand48_r(&DecisionData[omp_get_thread_num()], &location);
       location = location % 4;
@@ -341,7 +339,8 @@ void parallel() {
 
 int main()
 {
-  srand48(0);
+  //srand48(0);
+  srand(0);
   for(int i = 0; i < MAX_LOCK; ++i) {
     locks[i].Signal(); // Init Lock to 1 so it will pass through first
   }
@@ -359,7 +358,7 @@ int main()
   {
     poll();
     auto start = std::chrono::steady_clock::now();
-   // sequential(); // Sequential Update Loop, about 40-60
+    //sequential(); // Sequential Update Loop, about 40-60
     parallel(); // Parallel Update Loop
     auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
