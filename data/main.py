@@ -16,17 +16,14 @@ idx = 0
 threads = [1, 2, 4, 8]
 for file in ["single.txt", "two.txt", "four.txt", "eight.txt"]:
     with open(file, "r") as f:
-        xlist = []
-        ylist = []
-        generation = 0
         durations = list(map(lambda string: int(string), f.read().split(",")[:-1]))
         generations = list(range(0, len(durations)))
-        m = max(durations)
         maximum.append(max(durations))
         minimum.append(min(durations))
         averages.append(sum(durations) / len(durations))
-        fig = go.Figure(data=go.Scatter(x=xlist, y=ylist, mode='lines'))
+        fig = go.Figure(data=go.Scatter(x=generations, y=durations, mode='lines'))
         fig.update_layout(title=f"{threads[idx]} Thread(s) over 1000 Generations", xaxis_title="Generations", yaxis_title="Milliseconds", font=font)
+        fig.show()
         fig.write_image(f"With{threads[idx]}Threads.svg")
     idx = idx + 1
 
